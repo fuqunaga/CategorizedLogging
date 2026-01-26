@@ -1,0 +1,16 @@
+{
+  "name": "ga.fuquna.categorizedlogging",
+  "displayName": "Categorized Logging",
+  "version": "0.0.0",
+  "unity": "6000.2",
+  "keywords": [
+    "log",
+    "logging"
+  ],
+  "author": {
+    "name": "fuqunaga",
+    "email": "fukhid@gmail.com",
+    "url": "https://fuquna.ga"
+  },
+  "description": "Simple Categorized Logging library for Unity."
+}
