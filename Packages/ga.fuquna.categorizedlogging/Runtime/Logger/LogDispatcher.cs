@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
 
 namespace CategorizedLogging
 {
@@ -13,6 +14,8 @@ namespace CategorizedLogging
         private readonly Dictionary<(string, LogLevel), HashSet<ILogger>> _cachedLoggerTable = new();
         private readonly object _lockObject = new();
         
+        private bool _needsCacheRefresh = false;
+        
         
         public void Log(in LogEntry logEntry)
         {
@@ -22,6 +25,12 @@ namespace CategorizedLogging
             if (logLevel == LogLevel.None)
             {
                 return;
+            }
+            
+            if (_needsCacheRefresh)
+            {
+                _cachedLoggerTable.Clear();
+                _needsCacheRefresh = false;
             }
             
             if ( !_cachedLoggerTable.TryGetValue((category, logLevel), out var list))
@@ -43,38 +52,45 @@ namespace CategorizedLogging
             var anyCategory = string.IsNullOrEmpty(category) ||  category == "*";
             var anyLevel = logLevel == null;
 
-            lock (_lockObject)
+            var changed = false;
+            
+            if (anyCategory && anyLevel)
             {
-                if (anyCategory && anyLevel)
+                lock (_lockObject)
                 {
-                    _anyLoggers.Add(logger);
-                    _cachedLoggerTable.Clear();
-                }
-                else if (anyCategory)
-                {
-                    SetLoggerToDictionary(_specificLogLevelLoggers, logLevel.Value, logger);
-                }
-                else if (anyLevel)
-                {
-                    SetLoggerToDictionary(_specificCategoryLoggers, category, logger);
-                }
-                else
-                {
-                    SetLoggerToDictionary(_specificLoggers, (category, logLevel.Value), logger);
+                   changed = _anyLoggers.Add(logger);
                 }
             }
+            else if (anyCategory)
+            {
+                changed = SetLoggerToDictionary(_specificLogLevelLoggers, logLevel.Value, logger);
+            }
+            else if (anyLevel)
+            {
+                changed =  SetLoggerToDictionary(_specificCategoryLoggers, category, logger);
+            }
+            else
+            {
+                changed = SetLoggerToDictionary(_specificLoggers, (category, logLevel.Value), logger);
+            }
+            
+            _needsCacheRefresh = _needsCacheRefresh || changed;
         }
         
         
-        private void SetLoggerToDictionary<TKey>(Dictionary<TKey, HashSet<ILogger>> dictionary, TKey key, ILogger logger)
+        private bool SetLoggerToDictionary<TKey>(Dictionary<TKey, HashSet<ILogger>> dictionary, TKey key, ILogger logger)
         {
-            if (!dictionary.TryGetValue(key, out var loggerSet))
+            lock (_lockObject)
             {
-                loggerSet = new HashSet<ILogger>();
-                dictionary[key] = loggerSet;
+
+                if (!dictionary.TryGetValue(key, out var loggerSet))
+                {
+                    loggerSet = new HashSet<ILogger>();
+                    dictionary[key] = loggerSet;
+                }
+
+                return loggerSet.Add(logger);
             }
-            loggerSet.Add(logger);
-            _cachedLoggerTable.Clear();
         }
 
         private HashSet<ILogger> CreateLoggerCache(string category, LogLevel logLevel)
