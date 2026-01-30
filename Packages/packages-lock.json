@@ -158,7 +158,7 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "ga.fuquna.categorizedlogging": {
+    "ga.fuquna.categorized-logging": {
       "version": "file:ga.fuquna.categorizedlogging",
       "depth": 0,
       "source": "embedded",
