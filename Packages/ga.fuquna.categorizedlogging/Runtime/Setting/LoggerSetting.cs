@@ -7,7 +7,7 @@ namespace CategorizedLogging
     /// LogLevel per category settings for logger subscription
     /// </summary>
     [Serializable]
-    public class LoggerSubscribeSetting
+    public class LoggerSetting
     {
         public List<CategoryMinimumLogLevel> categoryLogLevels = new()
         {

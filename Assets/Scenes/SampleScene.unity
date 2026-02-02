@@ -393,6 +393,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1766493225}
   - component: {fileID: 1766493226}
+  - component: {fileID: 1766493227}
   m_Layer: 0
   m_Name: LogSettings
   m_TagString: Untagged
@@ -424,13 +425,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 1766493224}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3584b29f625dc114d8390022599d3a5c, type: 3}
+  m_Script: {fileID: 11500000, guid: 53cfcab5df034b2b8ab1953d1a04c189, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: CategorizedLogging::CategorizedLogging.LogSettingsComponent
-  loggerSubscribeSetting:
+  m_EditorClassIdentifier: CategorizedLogging::CategorizedLogging.InGameLogHolderSetting
+  loggerSetting:
     categoryLogLevels:
-    - category: +
+    - category: '*'
       logLevel: 0
+  logCountMax: 1000
+--- !u!114 &1766493227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1766493224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0b3d780d124a418af97d8969544b0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CategorizedLogging::CategorizedLogging.LogToUnityDebugLogSetting
+  loggerSetting:
+    categoryLogLevels:
+    - category: '*'
+      logLevel: 2
+  logTypeForTrace: 5
+  logTypeForDebug: 3
+  logTypeForInformation: 3
+  logTypeForWarning: 2
+  logTypeForError: 0
+  logTypeForCritical: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

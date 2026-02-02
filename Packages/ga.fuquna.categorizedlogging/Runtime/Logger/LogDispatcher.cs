@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace CategorizedLogging
 {
@@ -89,6 +90,25 @@ namespace CategorizedLogging
             changed = SetLoggerToDictionary(logLevelTable, logLevel, logger);
             
             _needsCacheRefresh = _needsCacheRefresh || changed;
+        }
+        
+        
+        public void Unsubscribe(ILogger logger)
+        {
+            lock (_lockObject)
+            {
+                foreach (var logLevelTable in _anyCategoryLoggers.Values)
+                {
+                    logLevelTable.Remove(logger);
+                }
+
+                foreach (var logLevelTable in _specificLoggers.Values.SelectMany(categoryTable => categoryTable.Values))
+                {
+                    logLevelTable.Remove(logger);
+                }
+                
+                _needsCacheRefresh = true;
+            }
         }
         
         
