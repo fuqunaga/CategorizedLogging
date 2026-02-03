@@ -19,7 +19,7 @@ namespace CategorizedLogging
 
         public override string ToString()
         {
-            return $"[{Timestamp:yyyy-MM-dd HH:mm:ss}][{LogLevel}][{Category}] {Message}";
+            return $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}][{LogLevel}][{Category}] {Message}";
         }
     }
 }
