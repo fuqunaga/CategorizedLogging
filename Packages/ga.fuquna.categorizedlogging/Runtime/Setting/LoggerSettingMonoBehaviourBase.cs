@@ -5,16 +5,37 @@ namespace CategorizedLogging
     /// <summary>
     /// Component to hold log settings in the scene
     /// </summary>
-    public abstract class LoggerSettingComponentBase : MonoBehaviour
+    public abstract class LoggerSettingMonoBehaviourBase : MonoBehaviour
     {
         public LoggerSetting loggerSetting;
 
+        
         protected abstract ILogger GetLogger();
 
-        private void OnEnable()
+        
+        #region Unity
+        
+        protected virtual void OnEnable() => Subscribe();
+
+        protected virtual void OnDisable() => Unsubscribe();
+        
+        protected virtual void OnValidate()
         {
-            var logger = GetLogger();
-            if (logger == null)
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            
+            Unsubscribe();
+            Subscribe();
+        }
+        
+        #endregion
+
+
+        protected virtual void Subscribe()
+        {
+            if (GetLogger() is not {} logger)
             {
                 return;
             }
@@ -25,13 +46,12 @@ namespace CategorizedLogging
                 return;
             }
             
-            dispatcher.Subscribe(logger, loggerSetting.categoryLogLevels);
+            dispatcher.Register(logger, loggerSetting.categoryLogLevels);
         }
-
-        private void OnDisable()
+        
+        protected virtual void Unsubscribe()
         {
-            var logger = GetLogger();
-            if (logger == null)
+            if (GetLogger() is not {} logger)
             {
                 return;
             }
@@ -42,7 +62,7 @@ namespace CategorizedLogging
                 return;
             }
             
-            dispatcher.Unsubscribe(logger);
+            dispatcher.Unregister(logger);
         }
     }
 }

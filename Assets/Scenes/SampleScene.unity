@@ -499,7 +499,8 @@ MonoBehaviour:
   loggerSetting:
     categoryLogLevels:
     - category: '*'
-      logLevel: 0
+      logLevel: 1
+  hoge: 70
   logCountMax: 1000
 --- !u!114 &1766493227
 MonoBehaviour:
@@ -517,6 +518,7 @@ MonoBehaviour:
     categoryLogLevels:
     - category: '*'
       logLevel: 2
+  hoge: 0
   traceLogType: 5
   debugLogType: 3
   informationLogType: 3

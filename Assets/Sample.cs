@@ -14,10 +14,16 @@ namespace CategorizedLogging.Samples
 
             var logEmitUI = CreateLogEmitUI();
             var inGameLogHolderUI = CreateInGameLogHolderUI();
-            inGameLogHolderUI.style.marginTop = 20;
+            inGameLogHolderUI.style.marginLeft = 100;
             
-            root.Add(logEmitUI);
-            root.Add(inGameLogHolderUI);
+            var row = new VisualElement()
+            {
+                style = { flexDirection = FlexDirection.Row }
+            };
+            row.Add(logEmitUI);
+            row.Add(inGameLogHolderUI);
+            
+            root.Add(row);
         }
 
         private VisualElement CreateLogEmitUI()

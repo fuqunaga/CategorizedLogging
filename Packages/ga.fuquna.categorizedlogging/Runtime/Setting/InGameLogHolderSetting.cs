@@ -1,6 +1,6 @@
 ﻿namespace CategorizedLogging
 {
-    public class InGameLogHolderSetting : LoggerSettingComponentBase
+    public class InGameLogHolderSetting : LoggerSettingMonoBehaviourBase
     {
         public int logCountMax = 1000;
 
@@ -10,8 +10,9 @@
         protected override ILogger GetLogger() => Logger;
 
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
             Logger.LogCountMax = logCountMax;
         }
     }

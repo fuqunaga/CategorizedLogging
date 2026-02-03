@@ -6,6 +6,9 @@ namespace CategorizedLogging
 {
     public class LogDispatcher : ILogger
     {
+        public static bool IsAnyCategory(string category) => category == "*";
+        
+        
         private readonly Dictionary<LogLevel, HashSet<ILogger>> _anyCategoryLoggers = new();
         private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _specificLoggers = new();
         
@@ -50,28 +53,31 @@ namespace CategorizedLogging
         }
 
 
-        public void Subscribe(ILogger logger, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
+        /// <summary>
+        /// ILoggerを登録する
+        /// categoryに"*"を指定すると全カテゴリに登録される
+        /// ただし"*"以外のカテゴリに対して個別に登録されたログレベルのほうが優先される
+        /// </summary>
+        public void Register(ILogger logger, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
         {
-            foreach (var minimumLogLevel in categoryLogLevels)
+            foreach (var categoryLogLevel in categoryLogLevels)
             {
-                for(var level = minimumLogLevel.logLevel; level <= LogLevel.Critical; level++)
+                for(var level = categoryLogLevel.logLevel; level <= LogLevel.Critical; level++)
                 {
-                    Subscribe(logger, minimumLogLevel.category, level);
+                    Register(logger, categoryLogLevel.category, level);
                 }
             }
         }
         
         
         [SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
-        public void Subscribe(ILogger logger, string category, LogLevel logLevel)
+        public void Register(ILogger logger, string category, LogLevel logLevel)
         {
-            var anyCategory = string.IsNullOrEmpty(category) ||  category == "*";
-
             var changed = false;
 
             Dictionary<LogLevel, HashSet<ILogger>> logLevelTable = null;
             
-            if (anyCategory)
+            if (IsAnyCategory(category))
             {
                 logLevelTable = _anyCategoryLoggers;
             }
@@ -93,7 +99,7 @@ namespace CategorizedLogging
         }
         
         
-        public void Unsubscribe(ILogger logger)
+        public void Unregister(ILogger logger)
         {
             lock (_lockObject)
             {
@@ -126,14 +132,28 @@ namespace CategorizedLogging
             }
         }
 
+        /// <summary>
+        /// CategoryとLogLevelに基づいて対象のILoggerのキャッシュを作成する
+        ///
+        /// AnyCategoryで指定されていてもspecificLoggersで指定されているILoggerはspecificLoggersを優先する
+        /// </summary>
         private HashSet<ILogger> CreateLoggerCache(string category, LogLevel logLevel)
         {
             lock (_lockObject)
             {
-                var result = new HashSet<ILogger>(_anyCategoryLoggers.GetValueOrDefault(logLevel));
+                var categoryLoggers = _specificLoggers.GetValueOrDefault(category);
+                var specificCategoryLoggers = categoryLoggers?
+                                                  .SelectMany(table => table.Value)
+                                                  .Distinct()
+                                              ?? Enumerable.Empty<ILogger>();
                 
-                if (_specificLoggers.TryGetValue(category, out var logLabelTable) 
-                    && logLabelTable.TryGetValue(logLevel, out var hashSet))
+                var result = new HashSet<ILogger>(
+                    _anyCategoryLoggers.GetValueOrDefault(logLevel)
+                    ?? Enumerable.Empty<ILogger>()
+                );
+                result.ExceptWith(specificCategoryLoggers);
+                
+                if (categoryLoggers?.TryGetValue(logLevel, out var hashSet) ?? false)
                 {
                     result.UnionWith(hashSet);
                 }

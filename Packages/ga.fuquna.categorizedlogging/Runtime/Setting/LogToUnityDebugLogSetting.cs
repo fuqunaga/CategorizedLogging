@@ -2,7 +2,7 @@
 
 namespace CategorizedLogging
 {
-    public class LogToUnityDebugLogSetting : LoggerSettingComponentBase
+    public class LogToUnityDebugLogSetting : LoggerSettingMonoBehaviourBase
     {
         [Header("LogType per LogLevel Settings")]
         public UnityLogTypeWithNone traceLogType = UnityLogTypeWithNone.None;	
@@ -17,8 +17,10 @@ namespace CategorizedLogging
         protected override ILogger GetLogger() => Logger;
 
 
-        private void OnValidate()
+        protected override void OnValidate()
         {
+            base.OnValidate();
+            
             Logger.LogLevelToUnityLogTypeTable[LogLevel.Trace] = traceLogType.ToLogType();
             Logger.LogLevelToUnityLogTypeTable[LogLevel.Debug] = debugLogType.ToLogType();
             Logger.LogLevelToUnityLogTypeTable[LogLevel.Information] = informationLogType.ToLogType();

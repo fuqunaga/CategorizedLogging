@@ -41,6 +41,7 @@ namespace CategorizedLogging.Editor
             categoryColumn.stretchable = true;
             
             var logLevelColumn = CreateCategoryLogLevelColumn(nameof(CategoryMinimumLogLevel.logLevel));
+            logLevelColumn.minWidth = 150;
             
             listView.columns.Add(categoryColumn);
             listView.columns.Add(logLevelColumn);
