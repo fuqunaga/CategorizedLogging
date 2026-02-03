@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace CategorizedLogging.Samples
 {
     [RequireComponent(typeof(UIDocument))]
-    public class Sample : MonoBehaviour
+    public class SampleUI : MonoBehaviour
     {
         private void Start()
         {

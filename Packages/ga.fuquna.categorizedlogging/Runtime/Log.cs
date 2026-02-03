@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace CategorizedLogging

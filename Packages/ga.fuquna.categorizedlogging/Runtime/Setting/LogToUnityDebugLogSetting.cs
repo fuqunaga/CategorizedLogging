@@ -19,6 +19,11 @@ namespace CategorizedLogging
 
         protected override void OnValidate()
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            
             base.OnValidate();
             
             Logger.LogLevelToUnityLogTypeTable[LogLevel.Trace] = traceLogType.ToLogType();

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace CategorizedLogging
@@ -15,25 +16,26 @@ namespace CategorizedLogging
         
         #region Unity
         
-        protected virtual void OnEnable() => Subscribe();
+        protected virtual void OnEnable() => Register();
 
-        protected virtual void OnDisable() => Unsubscribe();
-        
+        protected virtual void OnDisable() => Unregister();
+
         protected virtual void OnValidate()
         {
-            if (!isActiveAndEnabled)
+            // OnValidateはドメインリロード時に呼ばれるが、シーンロード時に別のオブジェクトとして再度呼ばれる
+            // ドメインリロード時のOnValidateは無視したいので、Application.isPlayingを確認する
+            if (!isActiveAndEnabled || !Application.isPlaying)
             {
                 return;
             }
             
-            Unsubscribe();
-            Subscribe();
+            Register();
         }
         
         #endregion
 
 
-        protected virtual void Subscribe()
+        protected virtual void Register()
         {
             if (GetLogger() is not {} logger)
             {
@@ -49,7 +51,7 @@ namespace CategorizedLogging
             dispatcher.Register(logger, loggerSetting.categoryLogLevels);
         }
         
-        protected virtual void Unsubscribe()
+        protected virtual void Unregister()
         {
             if (GetLogger() is not {} logger)
             {

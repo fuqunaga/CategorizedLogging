@@ -12,6 +12,11 @@
 
         protected override void OnValidate()
         {
+            if (!isActiveAndEnabled)
+            {
+                return;
+            }
+            
             base.OnValidate();
             Logger.LogCountMax = logCountMax;
         }

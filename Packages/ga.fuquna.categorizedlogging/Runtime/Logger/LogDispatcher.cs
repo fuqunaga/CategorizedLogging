@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace CategorizedLogging
 {
@@ -11,11 +14,29 @@ namespace CategorizedLogging
         
         private readonly Dictionary<LogLevel, HashSet<ILogger>> _anyCategoryLoggers = new();
         private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _specificLoggers = new();
-        
         private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _cachedLoggerTable = new();
         private readonly object _lockObject = new();
-        
         private bool _needsCacheRefresh = false;
+
+
+#if UNITY_EDITOR
+        public LogDispatcher()
+        {
+            EditorApplication.playModeStateChanged += (state) =>
+            {
+                if (state == PlayModeStateChange.ExitingEditMode)
+                {
+                    lock (_lockObject)
+                    {
+                        _anyCategoryLoggers.Clear();
+                        _specificLoggers.Clear();
+                        _cachedLoggerTable.Clear();
+                        _needsCacheRefresh = false;
+                    }
+                }
+            };
+        }
+#endif
         
         
         public void Log(in LogEntry logEntry)
@@ -60,6 +81,8 @@ namespace CategorizedLogging
         /// </summary>
         public void Register(ILogger logger, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
         {
+            Unregister(logger);
+            
             foreach (var categoryLogLevel in categoryLogLevels)
             {
                 for(var level = categoryLogLevel.logLevel; level <= LogLevel.Critical; level++)
@@ -95,26 +118,28 @@ namespace CategorizedLogging
             
             changed = SetLoggerToDictionary(logLevelTable, logLevel, logger);
             
-            _needsCacheRefresh = _needsCacheRefresh || changed;
+            _needsCacheRefresh |= changed;
         }
         
         
         public void Unregister(ILogger logger)
         {
+            var changed = false;
+
             lock (_lockObject)
             {
                 foreach (var logLevelTable in _anyCategoryLoggers.Values)
                 {
-                    logLevelTable.Remove(logger);
+                    changed |= logLevelTable.Remove(logger);
                 }
 
                 foreach (var logLevelTable in _specificLoggers.Values.SelectMany(categoryTable => categoryTable.Values))
                 {
-                    logLevelTable.Remove(logger);
+                    changed |= logLevelTable.Remove(logger);
                 }
-                
-                _needsCacheRefresh = true;
             }
+            
+            _needsCacheRefresh |= changed;
         }
         
         
