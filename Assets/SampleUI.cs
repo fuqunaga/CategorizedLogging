@@ -130,7 +130,7 @@ namespace CategorizedLogging.Samples
             var inGameLogHolder = inGameLogHolderSetting.Logger;
             
             var mainThreadContext = SynchronizationContext.Current;
-            inGameLogHolder.onLogEntryAdded += () =>
+            inGameLogHolder.onLogEntryAddedMultiThreaded += () =>
             {
                 if (mainThreadContext != null)
                 {

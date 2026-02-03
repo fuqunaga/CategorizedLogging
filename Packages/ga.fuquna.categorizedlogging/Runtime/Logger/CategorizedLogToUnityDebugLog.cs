@@ -1,10 +1,15 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using UnityEngine;
 
 namespace CategorizedLogging
 {
-    public class LogToUnityDebugLog : ILogger
+    public class CategorizedLogToUnityDebugLog : ILogger
     {
+        public delegate string LogEntryToMessage(in LogEntry logEntry);
+        
+        public LogEntryToMessage LogEntryToMessageFormatter { get; set; } = (in LogEntry logEntry) => logEntry.ToString();
+        
         public ConcurrentDictionary<LogLevel, LogType?> LogLevelToUnityLogTypeTable { get; } = new()
         {
             [LogLevel.Trace] = null,
@@ -17,13 +22,14 @@ namespace CategorizedLogging
         };
 
         
+        
         public void Log(in LogEntry logEntry)
         {
             if (LogLevelToUnityLogTypeTable.TryGetValue(logEntry.LogLevel, out var unityLogType)
                 && unityLogType is { } logType
                )
             {
-                Debug.unityLogger.Log(logType, logEntry.ToString());
+                Debug.unityLogger.Log(logType, LogEntryToMessageFormatter(logEntry));
             }
         }
     }

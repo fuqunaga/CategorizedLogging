@@ -13,7 +13,7 @@ namespace CategorizedLogging
         private readonly ConcurrentQueue<LogEntry> _logEntries = new();
         
         // 別スレッドから呼ばれるので注意
-        public event Action onLogEntryAdded;
+        public event Action onLogEntryAddedMultiThreaded;
 
         
         public int LogCountMax { get; set; } = 1000;
@@ -32,7 +32,7 @@ namespace CategorizedLogging
                 _logEntries.TryDequeue(out _);
             }
             
-            onLogEntryAdded?.Invoke();
+            onLogEntryAddedMultiThreaded?.Invoke();
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace CategorizedLogging
 {
-    public class LogToUnityDebugLogSetting : LoggerSettingMonoBehaviourBase
+    public class CategorizedLogToUnityDebugLogSetting : LoggerSettingMonoBehaviourBase
     {
         [Header("LogType per LogLevel Settings")]
         public UnityLogTypeWithNone traceLogType = UnityLogTypeWithNone.None;	
@@ -12,7 +12,7 @@ namespace CategorizedLogging
         public UnityLogTypeWithNone errorLogType = UnityLogTypeWithNone.Error;
         public UnityLogTypeWithNone criticalLogType = UnityLogTypeWithNone.Error;
 
-        public LogToUnityDebugLog Logger { get; } = new();
+        public CategorizedLogToUnityDebugLog Logger { get; } = new();
         
         protected override ILogger GetLogger() => Logger;
 
