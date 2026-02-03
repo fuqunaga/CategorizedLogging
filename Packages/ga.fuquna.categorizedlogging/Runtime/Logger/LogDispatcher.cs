@@ -15,7 +15,8 @@ namespace CategorizedLogging
         private readonly Dictionary<LogLevel, HashSet<ILogger>> _anyCategoryLoggers = new();
         private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _specificLoggers = new();
         private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _cachedLoggerTable = new();
-        private readonly object _lockObject = new();
+        private readonly object _lockLoggers = new();
+        private readonly object _lockCache = new();
         private bool _needsCacheRefresh = false;
 
 
@@ -26,7 +27,7 @@ namespace CategorizedLogging
             {
                 if (state == PlayModeStateChange.ExitingEditMode)
                 {
-                    lock (_lockObject)
+                    lock (_lockLoggers)
                     {
                         _anyCategoryLoggers.Clear();
                         _specificLoggers.Clear();
@@ -48,30 +49,36 @@ namespace CategorizedLogging
             {
                 return;
             }
+
+            HashSet<ILogger> loggers;
             
-            if (_needsCacheRefresh)
+            lock (_lockCache)
             {
-                _cachedLoggerTable.Clear();
-                _needsCacheRefresh = false;
+                if (_needsCacheRefresh)
+                {
+                    _needsCacheRefresh = false;
+                    _cachedLoggerTable.Clear();
+                }
+
+                if (!_cachedLoggerTable.TryGetValue(category, out var logLevelTable))
+                {
+                    logLevelTable = new Dictionary<LogLevel, HashSet<ILogger>>();
+                    _cachedLoggerTable[category] = logLevelTable;
+                }
+
+                if (!logLevelTable.TryGetValue(logLevel, out loggers))
+                {
+                    loggers = CreateLoggerCache(category, logLevel);
+                    logLevelTable[logLevel] = loggers;
+                }
             }
-            
-            if ( !_cachedLoggerTable.TryGetValue(category, out var logLevelTable))
-            {
-                logLevelTable = new Dictionary<LogLevel, HashSet<ILogger>>();
-                _cachedLoggerTable[category] = logLevelTable;
-            }
-            
-            if ( !logLevelTable.TryGetValue(logLevel, out var hashSet))
-            {
-                hashSet = CreateLoggerCache(category, logLevel);
-                logLevelTable[logLevel] = hashSet;
-            }
-            
-            foreach(var logger in hashSet)
+
+            foreach (var logger in loggers)
             {
                 logger.Log(logEntry);
             }
         }
+        
 
 
         /// <summary>
@@ -109,7 +116,7 @@ namespace CategorizedLogging
                 if (!_specificLoggers.TryGetValue(category, out logLevelTable))
                 {
                     logLevelTable = new Dictionary<LogLevel, HashSet<ILogger>>();
-                    lock (_lockObject)
+                    lock (_lockLoggers)
                     {
                         _specificLoggers[category] = logLevelTable;
                     }
@@ -126,7 +133,7 @@ namespace CategorizedLogging
         {
             var changed = false;
 
-            lock (_lockObject)
+            lock (_lockLoggers)
             {
                 foreach (var logLevelTable in _anyCategoryLoggers.Values)
                 {
@@ -145,7 +152,7 @@ namespace CategorizedLogging
         
         private bool SetLoggerToDictionary<TKey>(Dictionary<TKey, HashSet<ILogger>> dictionary, TKey key, ILogger logger)
         {
-            lock (_lockObject)
+            lock (_lockLoggers)
             {
                 if (!dictionary.TryGetValue(key, out var loggerSet))
                 {
@@ -164,7 +171,7 @@ namespace CategorizedLogging
         /// </summary>
         private HashSet<ILogger> CreateLoggerCache(string category, LogLevel logLevel)
         {
-            lock (_lockObject)
+            lock (_lockLoggers)
             {
                 var categoryLoggers = _specificLoggers.GetValueOrDefault(category);
                 var specificCategoryLoggers = categoryLoggers?

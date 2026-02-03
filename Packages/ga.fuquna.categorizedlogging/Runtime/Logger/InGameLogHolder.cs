@@ -24,14 +24,15 @@ namespace CategorizedLogging
         public void Log(in LogEntry logEntry)
         {
             _logEntries.Enqueue(logEntry);
-            onLogEntryAdded?.Invoke();
-
+            
             // 古いログを削除
             // たぶんO(n)なのでパフォーマンスが気になったら別の方法を検討する
             while (_logEntries.Count > LogCountMax)
             {
                 _logEntries.TryDequeue(out _);
             }
+            
+            onLogEntryAdded?.Invoke();
         }
     }
 }

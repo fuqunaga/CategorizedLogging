@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -55,16 +57,43 @@ namespace CategorizedLogging.Samples
                     marginTop = 10
                 }
             };
+
+            var threadCountField = new IntegerField("Thread Count") { value = 10 };
+            var emitMultiThreadButton = new Button(() =>
+            {
+                var message = logMessageField.value;
+                var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), logLevelDropdown.value);
+                var threadCount = threadCountField.value;
+
+                for (var i = 0; i < threadCount; i++)
+                {
+                    var threadIndex = i;
+                    Task.Run(() =>
+                    {
+                        Log.EmitLog(this, logLevel, $"[Thread {threadIndex}] {message}");
+                    });
+                }
+            })
+            {
+                text = "Emit Log from Multiple Threads",
+                style =
+                {
+                    marginTop = 10
+                }
+            };
+            
             
             container.Add(logMessageField);
             container.Add(logLevelDropdown);
             container.Add(emitButton);
+            container.Add(threadCountField);
+            container.Add(emitMultiThreadButton);
 
             return container;
         }
 
         
-        private VisualElement CreateInGameLogHolderUI()
+        private static VisualElement CreateInGameLogHolderUI()
         {
             var container = CreateContainer();
 
@@ -99,7 +128,19 @@ namespace CategorizedLogging.Samples
 
             var inGameLogHolderSetting = FindAnyObjectByType<InGameLogHolderSetting>();
             var inGameLogHolder = inGameLogHolderSetting.Logger;
-            inGameLogHolder.onLogEntryAdded += UpdateLogField;
+            
+            var mainThreadContext = SynchronizationContext.Current;
+            inGameLogHolder.onLogEntryAdded += () =>
+            {
+                if (mainThreadContext != null)
+                {
+                    mainThreadContext.Post(_ => UpdateLogField(), null);
+                }
+                else
+                {
+                    UpdateLogField();
+                }
+            };
 
             
             return container;
@@ -112,7 +153,7 @@ namespace CategorizedLogging.Samples
         }
 
         
-        private VisualElement CreateContainer()
+        private static VisualElement CreateContainer()
         {
             return new VisualElement()
             {
