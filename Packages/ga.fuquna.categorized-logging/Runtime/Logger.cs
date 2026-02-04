@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -9,6 +10,8 @@ namespace CategorizedLogging
 {
     public class Logger
     {
+        private readonly ThreadLocal<int> _threadRecursionDepth = new(() => 0);
+        
         public static bool IsAnyCategory(string category) => category == "*";
         
         
@@ -18,6 +21,7 @@ namespace CategorizedLogging
         private readonly object _lockLoggers = new();
         private readonly object _lockCache = new();
         private bool _needsCacheRefresh = false;
+        
 
 
 #if UNITY_EDITOR
@@ -42,40 +46,54 @@ namespace CategorizedLogging
         
         public void Log(in LogEntry logEntry)
         {
-            var category = logEntry.Category;
-            var logLevel = logEntry.LogLevel;
-            
-            if (logLevel == LogLevel.None)
+            _threadRecursionDepth.Value++;
+            try
             {
-                return;
+                // 再帰呼び出し防止
+                if (_threadRecursionDepth.Value > 1)
+                {
+                    return;
+                }
+
+                var category = logEntry.Category;
+                var logLevel = logEntry.LogLevel;
+
+                if (logLevel == LogLevel.None)
+                {
+                    return;
+                }
+
+                HashSet<ISink> loggers;
+
+                lock (_lockCache)
+                {
+                    if (_needsCacheRefresh)
+                    {
+                        _needsCacheRefresh = false;
+                        _cachedLoggerTable.Clear();
+                    }
+
+                    if (!_cachedLoggerTable.TryGetValue(category, out var logLevelTable))
+                    {
+                        logLevelTable = new Dictionary<LogLevel, HashSet<ISink>>();
+                        _cachedLoggerTable[category] = logLevelTable;
+                    }
+
+                    if (!logLevelTable.TryGetValue(logLevel, out loggers))
+                    {
+                        loggers = CreateLoggerCache(category, logLevel);
+                        logLevelTable[logLevel] = loggers;
+                    }
+                }
+
+                foreach (var logger in loggers)
+                {
+                    logger.Log(logEntry);
+                }
             }
-
-            HashSet<ISink> loggers;
-            
-            lock (_lockCache)
+            finally
             {
-                if (_needsCacheRefresh)
-                {
-                    _needsCacheRefresh = false;
-                    _cachedLoggerTable.Clear();
-                }
-
-                if (!_cachedLoggerTable.TryGetValue(category, out var logLevelTable))
-                {
-                    logLevelTable = new Dictionary<LogLevel, HashSet<ISink>>();
-                    _cachedLoggerTable[category] = logLevelTable;
-                }
-
-                if (!logLevelTable.TryGetValue(logLevel, out loggers))
-                {
-                    loggers = CreateLoggerCache(category, logLevel);
-                    logLevelTable[logLevel] = loggers;
-                }
-            }
-
-            foreach (var logger in loggers)
-            {
-                logger.Log(logEntry);
+                _threadRecursionDepth.Value--;
             }
         }
         
