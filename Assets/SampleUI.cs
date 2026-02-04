@@ -87,6 +87,7 @@ namespace CategorizedLogging.Samples
             });
 
             return　UI.Page(
+                UI.Toggle(nameof(UnityLogRedirector.Enabled), () => UnityLogRedirector.Enabled),
                 logMessageField,
                 logTypeField,
                 emitButton
