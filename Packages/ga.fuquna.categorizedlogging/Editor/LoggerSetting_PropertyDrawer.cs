@@ -6,14 +6,14 @@ using UnityEngine.UIElements;
 
 namespace CategorizedLogging.Editor
 {
-    [CustomPropertyDrawer(typeof(LoggerSetting))]
+    [CustomPropertyDrawer(typeof(SinkConfig))]
     public class LoggerSetting_PropertyDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var rootContainer = new VisualElement();
             
-            var categoryLogLevelsProperty = property.FindPropertyRelative(nameof(LoggerSetting.categoryLogLevels));
+            var categoryLogLevelsProperty = property.FindPropertyRelative(nameof(SinkConfig.categoryLogLevels));
 
             Assert.IsNotNull(categoryLogLevelsProperty);
             Assert.IsTrue(categoryLogLevelsProperty.isArray);

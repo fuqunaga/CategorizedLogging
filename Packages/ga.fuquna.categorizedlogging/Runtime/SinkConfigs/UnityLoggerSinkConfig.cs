@@ -2,7 +2,7 @@
 
 namespace CategorizedLogging
 {
-    public class CategorizedLogToUnityDebugLogSetting : LoggerSettingMonoBehaviourBase
+    public class UnityLoggerSinkConfig : SinkConfigMonoBehaviourBase
     {
         [Header("LogType per LogLevel Settings")]
         public UnityLogTypeWithNone traceLogType = UnityLogTypeWithNone.None;	
@@ -12,9 +12,9 @@ namespace CategorizedLogging
         public UnityLogTypeWithNone errorLogType = UnityLogTypeWithNone.Error;
         public UnityLogTypeWithNone criticalLogType = UnityLogTypeWithNone.Error;
 
-        public CategorizedLogToUnityDebugLog Logger { get; } = new();
+        public UnityLoggerSink Sink { get; } = new();
         
-        protected override ILogger GetLogger() => Logger;
+        protected override ISink GetSink() => Sink;
 
 
         protected override void OnValidate()
@@ -26,12 +26,12 @@ namespace CategorizedLogging
             
             base.OnValidate();
             
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Trace] = traceLogType.ToLogType();
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Debug] = debugLogType.ToLogType();
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Information] = informationLogType.ToLogType();
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Warning] = warningLogType.ToLogType();
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Error] = errorLogType.ToLogType();
-            Logger.LogLevelToUnityLogTypeTable[LogLevel.Critical] = criticalLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Trace] = traceLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Debug] = debugLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Information] = informationLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Warning] = warningLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Error] = errorLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Critical] = criticalLogType.ToLogType();
         }
     }
 }

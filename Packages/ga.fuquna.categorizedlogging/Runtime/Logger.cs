@@ -7,21 +7,21 @@ using UnityEditor;
 
 namespace CategorizedLogging
 {
-    public class LogDispatcher : ILogger
+    public class Logger
     {
         public static bool IsAnyCategory(string category) => category == "*";
         
         
-        private readonly Dictionary<LogLevel, HashSet<ILogger>> _anyCategoryLoggers = new();
-        private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _specificLoggers = new();
-        private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ILogger>>> _cachedLoggerTable = new();
+        private readonly Dictionary<LogLevel, HashSet<ISink>> _anyCategoryLoggers = new();
+        private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ISink>>> _specificLoggers = new();
+        private readonly Dictionary<string, Dictionary<LogLevel, HashSet<ISink>>> _cachedLoggerTable = new();
         private readonly object _lockLoggers = new();
         private readonly object _lockCache = new();
         private bool _needsCacheRefresh = false;
 
 
 #if UNITY_EDITOR
-        public LogDispatcher()
+        public Logger()
         {
             EditorApplication.playModeStateChanged += (state) =>
             {
@@ -50,7 +50,7 @@ namespace CategorizedLogging
                 return;
             }
 
-            HashSet<ILogger> loggers;
+            HashSet<ISink> loggers;
             
             lock (_lockCache)
             {
@@ -62,7 +62,7 @@ namespace CategorizedLogging
 
                 if (!_cachedLoggerTable.TryGetValue(category, out var logLevelTable))
                 {
-                    logLevelTable = new Dictionary<LogLevel, HashSet<ILogger>>();
+                    logLevelTable = new Dictionary<LogLevel, HashSet<ISink>>();
                     _cachedLoggerTable[category] = logLevelTable;
                 }
 
@@ -86,26 +86,26 @@ namespace CategorizedLogging
         /// categoryに"*"を指定すると全カテゴリに登録される
         /// ただし"*"以外のカテゴリに対して個別に登録されたログレベルのほうが優先される
         /// </summary>
-        public void Register(ILogger logger, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
+        public void Register(ISink sink, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
         {
-            Unregister(logger);
+            Unregister(sink);
             
             foreach (var categoryLogLevel in categoryLogLevels)
             {
                 for(var level = categoryLogLevel.logLevel; level <= LogLevel.Critical; level++)
                 {
-                    Register(logger, categoryLogLevel.category, level);
+                    Register(sink, categoryLogLevel.category, level);
                 }
             }
         }
         
         
         [SuppressMessage("ReSharper", "ConvertIfStatementToSwitchStatement")]
-        public void Register(ILogger logger, string category, LogLevel logLevel)
+        public void Register(ISink sink, string category, LogLevel logLevel)
         {
             var changed = false;
 
-            Dictionary<LogLevel, HashSet<ILogger>> logLevelTable = null;
+            Dictionary<LogLevel, HashSet<ISink>> logLevelTable = null;
             
             if (IsAnyCategory(category))
             {
@@ -115,7 +115,7 @@ namespace CategorizedLogging
             {
                 if (!_specificLoggers.TryGetValue(category, out logLevelTable))
                 {
-                    logLevelTable = new Dictionary<LogLevel, HashSet<ILogger>>();
+                    logLevelTable = new Dictionary<LogLevel, HashSet<ISink>>();
                     lock (_lockLoggers)
                     {
                         _specificLoggers[category] = logLevelTable;
@@ -123,13 +123,13 @@ namespace CategorizedLogging
                 }
             }
             
-            changed = SetLoggerToDictionary(logLevelTable, logLevel, logger);
+            changed = SetLoggerToDictionary(logLevelTable, logLevel, sink);
             
             _needsCacheRefresh |= changed;
         }
         
         
-        public void Unregister(ILogger logger)
+        public void Unregister(ISink sink)
         {
             var changed = false;
 
@@ -137,12 +137,12 @@ namespace CategorizedLogging
             {
                 foreach (var logLevelTable in _anyCategoryLoggers.Values)
                 {
-                    changed |= logLevelTable.Remove(logger);
+                    changed |= logLevelTable.Remove(sink);
                 }
 
                 foreach (var logLevelTable in _specificLoggers.Values.SelectMany(categoryTable => categoryTable.Values))
                 {
-                    changed |= logLevelTable.Remove(logger);
+                    changed |= logLevelTable.Remove(sink);
                 }
             }
             
@@ -150,17 +150,17 @@ namespace CategorizedLogging
         }
         
         
-        private bool SetLoggerToDictionary<TKey>(Dictionary<TKey, HashSet<ILogger>> dictionary, TKey key, ILogger logger)
+        private bool SetLoggerToDictionary<TKey>(Dictionary<TKey, HashSet<ISink>> dictionary, TKey key, ISink sink)
         {
             lock (_lockLoggers)
             {
                 if (!dictionary.TryGetValue(key, out var loggerSet))
                 {
-                    loggerSet = new HashSet<ILogger>();
+                    loggerSet = new HashSet<ISink>();
                     dictionary[key] = loggerSet;
                 }
 
-                return loggerSet.Add(logger);
+                return loggerSet.Add(sink);
             }
         }
 
@@ -169,7 +169,7 @@ namespace CategorizedLogging
         ///
         /// AnyCategoryで指定されていてもspecificLoggersで指定されているILoggerはspecificLoggersを優先する
         /// </summary>
-        private HashSet<ILogger> CreateLoggerCache(string category, LogLevel logLevel)
+        private HashSet<ISink> CreateLoggerCache(string category, LogLevel logLevel)
         {
             lock (_lockLoggers)
             {
@@ -177,11 +177,11 @@ namespace CategorizedLogging
                 var specificCategoryLoggers = categoryLoggers?
                                                   .SelectMany(table => table.Value)
                                                   .Distinct()
-                                              ?? Enumerable.Empty<ILogger>();
+                                              ?? Enumerable.Empty<ISink>();
                 
-                var result = new HashSet<ILogger>(
+                var result = new HashSet<ISink>(
                     _anyCategoryLoggers.GetValueOrDefault(logLevel)
-                    ?? Enumerable.Empty<ILogger>()
+                    ?? Enumerable.Empty<ISink>()
                 );
                 result.ExceptWith(specificCategoryLoggers);
                 

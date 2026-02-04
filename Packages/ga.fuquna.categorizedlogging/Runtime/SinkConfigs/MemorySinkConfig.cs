@@ -1,13 +1,13 @@
 ﻿namespace CategorizedLogging
 {
-    public class InGameLogHolderSetting : LoggerSettingMonoBehaviourBase
+    public class MemorySinkConfig : SinkConfigMonoBehaviourBase
     {
         public int logCountMax = 1000;
 
 
-        public InGameLogHolder Logger { get; } = new();
+        public MemorySink Sink { get; } = new();
         
-        protected override ILogger GetLogger() => Logger;
+        protected override ISink GetSink() => Sink;
 
 
         protected override void OnValidate()
@@ -18,7 +18,7 @@
             }
             
             base.OnValidate();
-            Logger.LogCountMax = logCountMax;
+            Sink.LogCountMax = logCountMax;
         }
     }
 }

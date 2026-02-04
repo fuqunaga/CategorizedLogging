@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using UnityEngine;
 
 namespace CategorizedLogging
 {
-    public class CategorizedLogToUnityDebugLog : ILogger
+    public class UnityLoggerSink : ISink
     {
         public delegate string LogEntryToMessage(in LogEntry logEntry);
         

@@ -1,6 +1,6 @@
 ﻿namespace CategorizedLogging
 {
-    public interface ILogger
+    public interface ISink
     {
         /// <summary>
         /// Add a log entry

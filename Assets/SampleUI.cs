@@ -126,8 +126,8 @@ namespace CategorizedLogging.Samples
             container.Add(label);
             container.Add(scrollView);
 
-            var inGameLogHolderSetting = FindAnyObjectByType<InGameLogHolderSetting>();
-            var inGameLogHolder = inGameLogHolderSetting.Logger;
+            var inGameLogHolderSetting = FindAnyObjectByType<MemorySinkConfig>();
+            var inGameLogHolder = inGameLogHolderSetting.Sink;
             
             var mainThreadContext = SynchronizationContext.Current;
             inGameLogHolder.onLogEntryAddedMultiThreaded += () =>

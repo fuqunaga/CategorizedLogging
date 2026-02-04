@@ -10,7 +10,7 @@ namespace CategorizedLogging
     /// </summary>
     public static class Log
     {
-        public static ILogger Logger { get; set; } = new LogDispatcher();
+        public static Logger Logger { get; set; } = new();
 
 
         public static void EmitLog(in LogEntry logEntry) => Logger?.Log(logEntry);

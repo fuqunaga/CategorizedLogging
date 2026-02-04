@@ -8,7 +8,7 @@ namespace CategorizedLogging
     /// アプリケーション内で管理するログ
     /// </summary>
     [Serializable]
-    public class InGameLogHolder : ILogger
+    public class MemorySink : ISink
     {
         private readonly ConcurrentQueue<LogEntry> _logEntries = new();
         
