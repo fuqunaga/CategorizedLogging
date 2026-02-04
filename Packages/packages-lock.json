@@ -159,10 +159,17 @@
       }
     },
     "ga.fuquna.categorized-logging": {
-      "version": "file:ga.fuquna.categorizedlogging",
+      "version": "file:ga.fuquna.categorized-logging",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
+    },
+    "ga.fuquna.rosettaui": {
+      "version": "2.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://registry.npmjs.com"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

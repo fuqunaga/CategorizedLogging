@@ -34,5 +34,10 @@ namespace CategorizedLogging
             
             onLogEntryAddedMultiThreaded?.Invoke();
         }
+
+        public void Clear()
+        {
+            _logEntries.Clear();
+        }
     }
 }

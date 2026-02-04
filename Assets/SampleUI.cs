@@ -2,135 +2,107 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using RosettaUI;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace CategorizedLogging.Samples
 {
-    [RequireComponent(typeof(UIDocument))]
     public class SampleUI : MonoBehaviour
     {
+        [SerializeField]
+        private RosettaUIRoot rosettaUIRoot;
+        
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-
-            var logEmitUI = CreateLogEmitUI();
-            var inGameLogHolderUI = CreateInGameLogHolderUI();
-            inGameLogHolderUI.style.marginLeft = 100;
-            
-            var row = new VisualElement()
-            {
-                style = { flexDirection = FlexDirection.Row }
-            };
-            row.Add(logEmitUI);
-            row.Add(inGameLogHolderUI);
-            
-            root.Add(row);
+            rosettaUIRoot.Build(CreateLogEmitWindow());
+            rosettaUIRoot.Build(CreateMemorySinkWindow());
         }
 
-        private VisualElement CreateLogEmitUI()
+
+        private Element CreateLogEmitWindow()
         {
-            var container = CreateContainer();
+            var logEmitUI = CreateLogEmitUI();
+            var unityLogEmitUI = CreateUnityLogEmitUI();
 
-            var logMessageField = new TextField("Log Message")
-            {
-                multiline = true,
-                value = "This is a sample log message."
-            };
-
-            var logLevelDropdown = new DropdownField(
-                "Log Level",
-                Enum.GetNames(typeof(LogLevel)).ToList(),
-                nameof(LogLevel.Information)
+            return UI.Window(UI.Column(
+                    logEmitUI,
+                    UI.Space().SetHeight(20f),
+                    unityLogEmitUI
+                )
             );
+        }
+
+        private Element CreateLogEmitUI()
+        {
+            var logMessage = "This is a sample log message.";
+            var logLevel = LogLevel.Information;
+
+            var logMessageField = UI.TextArea(() => logMessage);
+            var logLevelField = UI.Field(() => logLevel);
+
+            var emitButton = UI.Button("Emit Log", () =>
+            {
+                Log.EmitLog(this, logLevel, logMessage);
+            });
+
+
+            var threadCount = 10;
             
-            var emitButton = new Button(() =>
+            var threadCountField =UI.Field(() => threadCount);
+            var emitMultiThreadButton = UI.Button("Emit Log from Multiple Threads", () =>
             {
-                var message = logMessageField.value;
-                var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), logLevelDropdown.value);
-                Log.EmitLog(this, logLevel, message);
-            })
-            {
-                text = "Emit Log",
-                style =
-                {
-                    marginTop = 10
-                }
-            };
-
-            var threadCountField = new IntegerField("Thread Count") { value = 10 };
-            var emitMultiThreadButton = new Button(() =>
-            {
-                var message = logMessageField.value;
-                var logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), logLevelDropdown.value);
-                var threadCount = threadCountField.value;
-
                 for (var i = 0; i < threadCount; i++)
                 {
                     var threadIndex = i;
                     Task.Run(() =>
                     {
-                        Log.EmitLog(this, logLevel, $"[Thread {threadIndex}] {message}");
+                        Log.EmitLog(this, logLevel, $"[Thread {threadIndex}] {logMessage}");
                     });
                 }
-            })
-            {
-                text = "Emit Log from Multiple Threads",
-                style =
-                {
-                    marginTop = 10
-                }
-            };
-            
-            
-            container.Add(logMessageField);
-            container.Add(logLevelDropdown);
-            container.Add(emitButton);
-            container.Add(threadCountField);
-            container.Add(emitMultiThreadButton);
+            });
 
-            return container;
+
+            return　UI.Page(
+                logMessageField,
+                logLevelField,
+                emitButton,
+                UI.Space().SetHeight(10f),
+                threadCountField,
+                emitMultiThreadButton
+            );
+
+        }
+
+        private static Element CreateUnityLogEmitUI()
+        {
+            var logMessage = "This is a sample Unity log message.";
+            var logType = LogType.Log;
+
+            var logMessageField = UI.TextArea(() => logMessage);
+            var logTypeField = UI.Field(() => logType);
+
+            var emitButton = UI.Button("Debug.unityLogger.Log()", () =>
+            {
+                Debug.unityLogger.Log(logType, logMessage);
+            });
+
+            return　UI.Page(
+                logMessageField,
+                logTypeField,
+                emitButton
+            );
         }
 
         
-        private static VisualElement CreateInGameLogHolderUI()
+        private static Element CreateMemorySinkWindow()
         {
-            var container = CreateContainer();
-
-            var label = new Label("In-Game Log Holder")
-            {
-                style =
-                {
-                    unityFontStyleAndWeight = FontStyle.Bold
-                }
-            };
-
-            var scrollView = new ScrollView()
-            {
-                horizontalScrollerVisibility = ScrollerVisibility.Auto
-            };
-
+            var logText = string.Empty;
             
-            var logField = new TextField()
-            {
-                multiline = true,
-                isReadOnly = true,
-                verticalScrollerVisibility = ScrollerVisibility.Auto,
-                style =
-                {
-                    height = 500,
-                }
-            };
-            scrollView.Add(logField);
-            
-            container.Add(label);
-            container.Add(scrollView);
-
-            var inGameLogHolderSetting = FindAnyObjectByType<MemorySinkConfig>();
-            var inGameLogHolder = inGameLogHolderSetting.Sink;
+            var memorySinkConfig = FindAnyObjectByType<MemorySinkConfig>();
+            var memorySink = memorySinkConfig.Sink;
             
             var mainThreadContext = SynchronizationContext.Current;
-            inGameLogHolder.onLogEntryAddedMultiThreaded += () =>
+            memorySink.onLogEntryAddedMultiThreaded += () =>
             {
                 if (mainThreadContext != null)
                 {
@@ -142,27 +114,29 @@ namespace CategorizedLogging.Samples
                 }
             };
 
-            
-            return container;
+
+            return UI.Window("Memory Sink Log Entries",
+                    UI.ScrollViewVerticalAndHorizontal(null, null,
+                        UI.Row(
+                            UI.Space(),
+                            UI.Button("Clear Log", () =>
+                            {
+                                memorySink.Clear();
+                                UpdateLogField();
+                            })
+                        ),
+                        UI.TextArea(null, () => logText)
+                    )
+                )
+                .SetWidth(500f)
+                .SetHeight(400f)
+                .SetPosition(Vector2.right * 500f);
+                
  
             void UpdateLogField()
             {
-                var logText = string.Join(Environment.NewLine, inGameLogHolder.LogEntries.Select(entry => entry.ToString()));
-                logField.value = logText;
+                logText = string.Join(Environment.NewLine, memorySink.LogEntries.Select(entry => entry.ToString()));
             }
-        }
-
-        
-        private static VisualElement CreateContainer()
-        {
-            return new VisualElement()
-            {
-                style =
-                {
-                    width = 500f,
-                    backgroundColor = new StyleColor(new Color(0.7f, 0.7f, 0.7f)),
-                }
-            };
         }
     }
 }
