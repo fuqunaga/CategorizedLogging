@@ -2,7 +2,7 @@
 
 namespace CategorizedLogging
 {
-    public class UnityLoggerSinkConfig : SinkConfigMonoBehaviourBase
+    public class UnityLoggerSinkConfig : SinkConfigMonoBehaviour<UnityLoggerSink>
     {
         [Header("LogType per LogLevel Settings")]
         public UnityLogTypeWithNone traceLogType = UnityLogTypeWithNone.None;	
@@ -11,12 +11,7 @@ namespace CategorizedLogging
         public UnityLogTypeWithNone warningLogType = UnityLogTypeWithNone.Warning;	
         public UnityLogTypeWithNone errorLogType = UnityLogTypeWithNone.Error;
         public UnityLogTypeWithNone criticalLogType = UnityLogTypeWithNone.Error;
-
-        public UnityLoggerSink Sink { get; } = new();
         
-        protected override ISink GetSink() => Sink;
-
-
         protected override void OnValidate()
         {
             if (!isActiveAndEnabled)

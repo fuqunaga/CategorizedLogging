@@ -5,13 +5,13 @@ namespace CategorizedLogging
     /// <summary>
     /// Component to hold log settings in the scene
     /// </summary>
-    public abstract class SinkConfigMonoBehaviourBase : MonoBehaviour
+    public abstract class SinkConfigMonoBehaviourBase<TSink> : MonoBehaviour
+        where TSink : ISink, new()
     {
-        public SinkFilterConfig sinkFilterConfig;
+        public virtual TSink Sink { get; } = new();
 
+        public abstract SinkFilterConfig SinkFilterConfig { get; }
         
-        protected abstract ISink GetSink();
-
         
         #region Unity
         
@@ -36,34 +36,22 @@ namespace CategorizedLogging
 
         protected virtual void Register()
         {
-            if (GetSink() is not {} sink)
+            if (Sink is not {} sink)
             {
-                return;
-            }
-
-            if (Log.Logger is not { } logger)
-            {
-                Debug.LogWarning("[CategorizedLogging] Log.Logger is not LogDispatcher. Cannot subscribe logger.");
                 return;
             }
             
-            logger.Register(sink, sinkFilterConfig.categoryLogLevels);
+            Log.RegisterSink(sink, SinkFilterConfig);
         }
         
         protected virtual void Unregister()
         {
-            if (GetSink() is not {} sink)
+            if (Sink is not {} sink)
             {
                 return;
             }
             
-            if (Log.Logger is not {} logger)
-            {
-                Debug.LogWarning("[CategorizedLogging] Log.Logger is not LogDispatcher. Cannot unsubscribe logger.");
-                return;
-            }
-            
-            logger.Unregister(sink);
+            Log.UnregisterSink(sink);
         }
     }
 }
