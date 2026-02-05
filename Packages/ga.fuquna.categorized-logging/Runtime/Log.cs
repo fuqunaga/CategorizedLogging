@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 // ReSharper disable MemberCanBePrivate.Global
 namespace CategorizedLogging
@@ -41,5 +42,30 @@ namespace CategorizedLogging
         public static void Warning<TCaller>(TCaller _, string message) => Warning<TCaller>(message);
         public static void Error<TCaller>(TCaller _, string message) => Error<TCaller>(message);
         public static void Critical<TCaller>(TCaller _, string message) => Critical<TCaller>(message);
+        
+        
+        #region Register / Unregister Sinks
+
+        public static void RegisterSink(ISink sink, SinkFilterConfig filterConfig)
+        {
+            Logger?.Register(sink, filterConfig.categoryLogLevels);
+        }
+        
+        public static void RegisterSink(ISink sink, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
+        {
+            Logger?.Register(sink, categoryLogLevels);
+        }
+        
+        public static void RegisterSink(ISink sink, string category, LogLevel logLevel)
+        {
+            Logger?.Register(sink, category, logLevel);
+        }
+        
+        public static void UnregisterSink(ISink sink)
+        {
+            Logger?.Unregister(sink);
+        }
+        
+        #endregion
     }
 }

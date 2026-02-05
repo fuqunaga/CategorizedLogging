@@ -7,7 +7,7 @@ namespace CategorizedLogging
     /// </summary>
     public abstract class SinkConfigMonoBehaviourBase : MonoBehaviour
     {
-        public SinkConfig sinkConfig;
+        public SinkFilterConfig sinkFilterConfig;
 
         
         protected abstract ISink GetSink();
@@ -47,7 +47,7 @@ namespace CategorizedLogging
                 return;
             }
             
-            logger.Register(sink, sinkConfig.categoryLogLevels);
+            logger.Register(sink, sinkFilterConfig.categoryLogLevels);
         }
         
         protected virtual void Unregister()

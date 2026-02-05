@@ -16,7 +16,7 @@ namespace CategorizedLogging
         public event Action onLogEntryAddedMultiThreaded;
 
         
-        public int LogCountMax { get; set; } = 1000;
+        public int Capacity { get; set; } = 1000;
         
         public IEnumerable<LogEntry> LogEntries => _logEntries;
 
@@ -27,7 +27,7 @@ namespace CategorizedLogging
             
             // 古いログを削除
             // たぶんO(n)なのでパフォーマンスが気になったら別の方法を検討する
-            while (_logEntries.Count > LogCountMax)
+            while (_logEntries.Count > Capacity)
             {
                 _logEntries.TryDequeue(out _);
             }

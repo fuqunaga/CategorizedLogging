@@ -18,7 +18,7 @@
             }
             
             base.OnValidate();
-            Sink.LogCountMax = logCountMax;
+            Sink.Capacity = logCountMax;
         }
     }
 }
