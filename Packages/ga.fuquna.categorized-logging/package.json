@@ -12,5 +12,9 @@
     "email": "fukhid@gmail.com",
     "url": "https://fuquna.ga"
   },
-  "description": "Simple Categorized Logging library for Unity."
+  "description": "Simple Categorized Logging library for Unity.",
+  "repository": {
+    "url": "https://github.com/fuqunaga/CategorizedLogging"
+  },
+  "license": "MIT"
 }
