@@ -1,7 +1,7 @@
 {
   "name": "ga.fuquna.categorized-logging",
   "displayName": "Categorized Logging",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "unity": "6000.2",
   "keywords": [
     "log",
