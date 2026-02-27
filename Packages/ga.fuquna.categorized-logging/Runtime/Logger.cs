@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -43,7 +44,7 @@ namespace CategorizedLogging
         }
 #endif
         
-        
+        [HideInCallstack]
         public void Log(in LogEntry logEntry)
         {
             _threadRecursionDepth.Value++;

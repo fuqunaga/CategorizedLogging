@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace CategorizedLogging
@@ -21,7 +22,7 @@ namespace CategorizedLogging
         };
 
         
-        
+        [HideInCallstack]
         public void Log(in LogEntry logEntry)
         {
             if (LogLevelToUnityLogTypeTable.TryGetValue(logEntry.LogLevel, out var unityLogType)
@@ -30,6 +31,15 @@ namespace CategorizedLogging
             {
                 Debug.unityLogger.Log(logType, LogEntryToMessageFormatter(logEntry));
             }
+        }
+        
+        // 明示的なインターフェース実装に属性を付与してブリッジメソッドを上書きして
+        // ブリッジメソッドも HideInCallstack にする
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void ISink.Log(in LogEntry logEntry)
+        {
+            Log(logEntry);
         }
     }
 }
