@@ -9,7 +9,7 @@ using UnityEditor;
 
 namespace CategorizedLogging
 {
-    public class Logger
+    public class LogDispatcher
     {
         private readonly ThreadLocal<int> _threadRecursionDepth = new(() => 0);
         
@@ -26,7 +26,7 @@ namespace CategorizedLogging
 
 
 #if UNITY_EDITOR
-        public Logger()
+        public LogDispatcher()
         {
             EditorApplication.playModeStateChanged += (state) =>
             {

@@ -12,10 +12,10 @@ namespace CategorizedLogging
     /// </summary>
     public static class Log
     {
-        public static Logger Logger { get; set; } = new();
+        public static LogDispatcher LogDispatcher { get; set; } = new();
 
 
-        [HideInCallstack] public static void EmitLog(in LogEntry logEntry) => Logger?.Log(logEntry);
+        [HideInCallstack] public static void EmitLog(in LogEntry logEntry) => LogDispatcher?.Log(logEntry);
         [HideInCallstack] public static void EmitLog(string category, LogLevel logLevel, string message) => EmitLog(new LogEntry(logLevel, category, message));
         [HideInCallstack] public static void EmitLog(Type typeForCategory, LogLevel logLevel, string message) => EmitLog(typeForCategory.Name, logLevel, message);
         [HideInCallstack] public static void EmitLog<TCaller>(LogLevel logLevel, string message) => EmitLog(typeof(TCaller), logLevel, message);
@@ -49,22 +49,22 @@ namespace CategorizedLogging
 
         public static void RegisterSink(ISink sink, SinkFilterConfig filterConfig)
         {
-            Logger?.Register(sink, filterConfig.categoryLogLevels);
+            LogDispatcher?.Register(sink, filterConfig.categoryLogLevels);
         }
         
         public static void RegisterSink(ISink sink, IEnumerable<CategoryMinimumLogLevel> categoryLogLevels)
         {
-            Logger?.Register(sink, categoryLogLevels);
+            LogDispatcher?.Register(sink, categoryLogLevels);
         }
         
         public static void RegisterSink(ISink sink, string category, LogLevel logLevel)
         {
-            Logger?.Register(sink, category, logLevel);
+            LogDispatcher?.Register(sink, category, logLevel);
         }
         
         public static void UnregisterSink(ISink sink)
         {
-            Logger?.Unregister(sink);
+            LogDispatcher?.Unregister(sink);
         }
         
         #endregion
