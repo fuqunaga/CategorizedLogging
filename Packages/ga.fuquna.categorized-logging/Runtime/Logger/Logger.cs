@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace CategorizedLogging
 {
@@ -30,6 +31,10 @@ namespace CategorizedLogging
             _category = category;
         }
 
-        public void EmitLog(LogLevel logLevel, string message) => Log.EmitLog(_category, logLevel, message);
+        [HideInCallstack]
+        public LogEntry CreateLogEntry(LogLevel logLevel, string message)
+        {
+            return new LogEntry(logLevel, _category, message);
+        }
     }
 }
