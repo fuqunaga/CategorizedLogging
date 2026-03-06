@@ -1,10 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/fuqunaga/CategorizedLogging/compare/ga.fuquna.categorized-logging-v0.1.1...ga.fuquna.categorized-logging-v0.2.0) (2026-03-06)
+
+
+### Features
+
+* add ListenerSink ([ffb5b99](https://github.com/fuqunaga/CategorizedLogging/commit/ffb5b99e7c0490b188db631e72b54df3de97b66b))
+* add Logger. change name Logger to LogDispatcher ([8e45d81](https://github.com/fuqunaga/CategorizedLogging/commit/8e45d8150b0af0d1e8e1b47d9c2321156600eb9a))
+* add LogModifier ([b1728bd](https://github.com/fuqunaga/CategorizedLogging/commit/b1728bd2d1eb1991f2e03d7e374e20c5d680d034))
+
+
+### Bug Fixes
+
+* UnityLoggerSink changes default LogType for LogLevel.Trace to LogType.Log from null ([18a9004](https://github.com/fuqunaga/CategorizedLogging/commit/18a9004e83fb308c4e962ab889b4d1003abd86be))
+
 ## [0.1.1](https://github.com/fuqunaga/CategorizedLogging/compare/ga.fuquna.categorized-logging-v0.1.0...ga.fuquna.categorized-logging-v0.1.1) (2026-02-27)
 
 
 ### Bug Fixes
 
 * add HideInCallstackAttribute ([0622c11](https://github.com/fuqunaga/CategorizedLogging/commit/0622c118a0696379a3e4e1916e6f41db56d1bac2))
-
-
