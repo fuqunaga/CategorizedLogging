@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/fuqunaga/CategorizedLogging/compare/ga.fuquna.categorized-logging-v0.2.0...ga.fuquna.categorized-logging-v0.3.0) (2026-03-11)
+
+
+### Features
+
+* implement LogScope and LogProperty ([7a7d3aa](https://github.com/fuqunaga/CategorizedLogging/commit/7a7d3aa7b0ff7cba36679d4131cc848ee475e81c))
+
 ## [0.2.0](https://github.com/fuqunaga/CategorizedLogging/compare/ga.fuquna.categorized-logging-v0.1.1...ga.fuquna.categorized-logging-v0.2.0) (2026-03-06)
 
 
