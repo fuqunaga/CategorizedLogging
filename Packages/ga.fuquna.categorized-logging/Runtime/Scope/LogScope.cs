@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 
 namespace CategorizedLogging.Scope
 {
@@ -7,7 +6,6 @@ namespace CategorizedLogging.Scope
     /// 同一スレッドにおけるスコープ
     /// スコープとはLogPropertyを保持する単位
     /// </summary>
-    [MustDisposeResource]
     public readonly struct LogScope : IDisposable
     {
         private readonly LogScopeRecord _record;

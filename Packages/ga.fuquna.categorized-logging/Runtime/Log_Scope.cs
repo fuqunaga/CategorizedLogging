@@ -8,7 +8,10 @@ namespace CategorizedLogging
     /// /// </summary>
     public static partial class Log
     {
-        [MustDisposeResource]
+        /// <summary>
+        /// 同一スレッドにおけるスコープを開始します
+        /// 主にusingとともに使用してDisposeされることを想定しています
+        /// </summary>
         public static LogScope BeginScope(string name = "")
         {
             return new LogScope(name);
