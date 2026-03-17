@@ -37,7 +37,7 @@ namespace CategorizedLogging.Scope
         public DateTime StartTime => StartTimeUtc.ToLocalTime();
         public DateTime EndTime => EndTimeUtc.ToLocalTime();
         public IReadOnlyDictionary<string, string> Properties => _properties;
-
+        public bool IsRoot => Parent == null || Parent == this;
         
         public LogScopeRecord(string name = "", LogScopeRecord parent = null)
         {
