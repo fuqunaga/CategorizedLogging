@@ -547,10 +547,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53cfcab5df034b2b8ab1953d1a04c189, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CategorizedLogging::CategorizedLogging.InGameLogHolderSetting
-  sinkConfig:
-    categoryLogLevels:
-    - category: '*'
-      logLevel: 1
+  filter:
+    filterParameters:
+    - scopeName: '*'
+      minimumLogLevel: 2
+      properties: []
   logCountMax: 1000
 --- !u!114 &1766493227
 MonoBehaviour:
@@ -564,10 +565,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0b3d780d124a418af97d8969544b0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CategorizedLogging::CategorizedLogging.LogToUnityDebugLogSetting
-  sinkConfig:
-    categoryLogLevels:
-    - category: '*'
-      logLevel: 1
+  filter:
+    filterParameters:
+    - scopeName: '*'
+      minimumLogLevel: 2
+      properties: []
   traceLogType: 5
   debugLogType: 3
   informationLogType: 3

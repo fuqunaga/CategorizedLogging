@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using CategorizedLogging.Scope;
 using NUnit.Framework;
 
 namespace CategorizedLogging.Test.Editor
 {
     public class TestLogFilter
     {
-        private static LogFilter CreateFilter(string scopeName, LogLevel minimumLogLevel, List<(string, string)> properties = null)
+        private static LogFilter CreateFilter(string scopeName, LogLevel minimumLogLevel, List<LogScopeProperty> properties = null)
         {
             return new LogFilter
             {
@@ -51,13 +52,13 @@ namespace CategorizedLogging.Test.Editor
             {
                 scopeName = "Test",
                 minimumLogLevel = LogLevel.Debug,
-                properties = new List<(string, string)> { ("key1", "val1"), ("key2", "val2") }
+                properties = new List<LogScopeProperty> { ("key1", "val1"), ("key2", "val2") }
             };
             var b = new LogFilterParameter
             {
                 scopeName = "Test",
                 minimumLogLevel = LogLevel.Debug,
-                properties = new List<(string, string)> { ("key2", "val2"), ("key1", "val1") }
+                properties = new List<LogScopeProperty> { ("key2", "val2"), ("key1", "val1") }
             };
             Assert.IsTrue(a.Equals(b));
         }
@@ -69,13 +70,13 @@ namespace CategorizedLogging.Test.Editor
             {
                 scopeName = "Test",
                 minimumLogLevel = LogLevel.Debug,
-                properties = new List<(string, string)> { ("key1", "val1") }
+                properties = new List<LogScopeProperty> { ("key1", "val1") }
             };
             var b = new LogFilterParameter
             {
                 scopeName = "Test",
                 minimumLogLevel = LogLevel.Debug,
-                properties = new List<(string, string)> { ("key1", "valX") }
+                properties = new List<LogScopeProperty> { ("key1", "valX") }
             };
             Assert.IsFalse(a.Equals(b));
         }
@@ -95,7 +96,7 @@ namespace CategorizedLogging.Test.Editor
             {
                 scopeName = "Test",
                 minimumLogLevel = LogLevel.Debug,
-                properties = new List<(string, string)> { ("key1", "val1") }
+                properties = new List<LogScopeProperty> { ("key1", "val1") }
             };
             var b = new LogFilterParameter { scopeName = "Test", minimumLogLevel = LogLevel.Debug, properties = null };
             Assert.IsFalse(a.Equals(b));
@@ -191,7 +192,7 @@ namespace CategorizedLogging.Test.Editor
         [Test]
         public void Filter_MatchingProperty_IsCaptured()
         {
-            var filter = CreateFilter("*", LogLevel.Trace, new List<(string, string)> { ("env", "prod") });
+            var filter = CreateFilter("*", LogLevel.Trace, new List<LogScopeProperty> { ("env", "prod") });
 
             LogRecord captured = null;
             using (Log.Listen(filter, e => captured = e))
@@ -206,7 +207,7 @@ namespace CategorizedLogging.Test.Editor
         [Test]
         public void Filter_NotMatchingProperty_IsNotCaptured()
         {
-            var filter = CreateFilter("*", LogLevel.Trace, new List<(string, string)> { ("env", "prod") });
+            var filter = CreateFilter("*", LogLevel.Trace, new List<LogScopeProperty> { ("env", "prod") });
 
             LogRecord captured = null;
             using (Log.Listen(filter, e => captured = e))

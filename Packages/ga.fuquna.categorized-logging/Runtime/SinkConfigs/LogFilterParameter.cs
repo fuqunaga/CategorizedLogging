@@ -10,8 +10,8 @@ namespace CategorizedLogging
     public class LogFilterParameter : IEquatable<LogFilterParameter>
     {
         public string scopeName;
-        public List<(string, string)> properties;
         public LogLevel minimumLogLevel;
+        public List<LogScopeProperty> properties;
 
 
         public LogFilterParameter()
@@ -23,7 +23,7 @@ namespace CategorizedLogging
             scopeName = other.scopeName;
             if (other.properties != null)
             {
-                properties = new List<(string, string)>(other.properties.Distinct());
+                properties = new List<LogScopeProperty>(other.properties.Distinct());
             }
             minimumLogLevel = other.minimumLogLevel;
         }
@@ -99,7 +99,7 @@ namespace CategorizedLogging
             if (properties == null || other.properties == null) return false;
             if (properties.Count != other.properties.Count) return false;
 
-            using var _ = ListPool<(string, string)>.Get(out var otherCopy);
+            using var _ = ListPool<LogScopeProperty>.Get(out var otherCopy);
             otherCopy.AddRange(other.properties);
             return properties.All(item => otherCopy.Remove(item));
         }

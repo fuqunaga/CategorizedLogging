@@ -15,6 +15,10 @@ namespace CategorizedLogging.Scope
             _record = new LogScopeRecord(name, parent);
         }
         
+        
+        public LogScope SetProperty<T>(string propertyName, T propertyValue)
+            => SetProperty(propertyName, propertyValue?.ToString());
+        
         public LogScope SetProperty(string propertyName, string propertyValue)
         {
             _record.SetProperty(propertyName, propertyValue);
