@@ -9,7 +9,7 @@ namespace CategorizedLogging
         public int LineNumber { get; }
         public string MemberName { get; }
         
-        public string FileName => Path.GetFileNameWithoutExtension(FilePath);
+        public string FileName => Path.GetFileName(FilePath);
 
         public CallerInformation(string callerFilePath, int callerLineNumber, string memberName)
         {
@@ -18,6 +18,7 @@ namespace CategorizedLogging
             MemberName = memberName;
         }
 
+        public override string ToString() => $"{MemberName}@{FileName}:{LineNumber}";
         
         #region IEquatable
         
