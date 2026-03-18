@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace CategorizedLogging.Test.Editor
+namespace ScorpionLog.Test.Editor
 {
     public class TestLog_Output
     {

@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using UnityEngine;
 
-namespace CategorizedLogging.Test.Editor
+namespace ScorpionLog.Test.Editor
 {
     public class AllocationLog
     {

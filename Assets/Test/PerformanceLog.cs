@@ -3,7 +3,7 @@ using System.Diagnostics;
 using NUnit.Framework;
 using Debug = UnityEngine.Debug;
 
-namespace CategorizedLogging.Test.Editor
+namespace ScorpionLog.Test.Editor
 {
     public class PerformanceLog
     {

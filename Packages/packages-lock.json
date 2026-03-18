@@ -158,18 +158,18 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "ga.fuquna.categorized-logging": {
-      "version": "file:ga.fuquna.categorized-logging",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {}
-    },
     "ga.fuquna.rosettaui": {
       "version": "2.0.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
       "url": "https://registry.npmjs.com"
+    },
+    "ga.fuquna.scorpion-log": {
+      "version": "file:ga.fuquna.scorpion-log",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

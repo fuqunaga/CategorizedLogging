@@ -1,0 +1,20 @@
+{
+  "name": "ga.fuquna.scorpion-log",
+  "displayName": "Scorpion Log",
+  "version": "0.3.0",
+  "unity": "6000.2",
+  "keywords": [
+    "log",
+    "logging"
+  ],
+  "author": {
+    "name": "fuqunaga",
+    "email": "fukhid@gmail.com",
+    "url": "https://fuquna.ga"
+  },
+  "description": "Scope-based Logging library for Unity.",
+  "repository": {
+    "url": "https://github.com/fuqunaga/ScorpionLog"
+  },
+  "license": "MIT"
+}

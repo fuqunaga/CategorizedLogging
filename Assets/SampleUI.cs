@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using RosettaUI;
 using UnityEngine;
 
-namespace CategorizedLogging.Samples
+namespace ScorpionLog.Samples
 {
     public class SampleUI : MonoBehaviour
     {
@@ -86,7 +86,7 @@ namespace CategorizedLogging.Samples
             return　UI.Page(
                 UI.Label($"<b>{nameof(UnityLogRedirector)}</b>"),
                 UI.Indent(
-                    UI.HelpBox("Debug.Log()などのUnityのログ出力をCategorized Loggingにリダイレクトします"),
+                    UI.HelpBox($"Debug.Log()などのUnityのログ出力を{nameof(ScorpionLog)}にリダイレクトします"),
                     UI.Toggle(nameof(UnityLogRedirector.Enabled), () => UnityLogRedirector.Enabled),
                     logMessageField,
                     logTypeField,

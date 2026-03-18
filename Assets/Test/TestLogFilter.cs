@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using CategorizedLogging.Scope;
 using NUnit.Framework;
+using ScorpionLog.Scope;
 
-namespace CategorizedLogging.Test.Editor
+namespace ScorpionLog.Test.Editor
 {
     public class TestLogFilter
     {
