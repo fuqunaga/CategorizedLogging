@@ -10,6 +10,8 @@ namespace ScotchLog
     [Serializable]
     public class LogFilter
     {
+        public static LogFilter All => Create(LogLevel.Information);
+        
         public static LogFilter Create(LogLevel logLevel)
         {
             var config = new LogFilter();

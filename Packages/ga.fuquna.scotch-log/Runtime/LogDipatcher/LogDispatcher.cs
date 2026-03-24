@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 #if UNITY_EDITOR
@@ -11,8 +12,7 @@ namespace ScotchLog
     public class LogDispatcher : ILogDispatcher
     {
         private readonly ThreadLocal<int> _threadRecursionDepth = new(() => 0);
-        
-        
+        private readonly ThreadLocal<HashSet<ISink>> _threadLocalSinksCache = new(() => new HashSet<ISink>());
         private readonly Dictionary<LogFilter, HashSet<ISink>> _filterToSinks = new();
         private readonly object _lockFilterToSinks = new();
 
@@ -51,7 +51,8 @@ namespace ScotchLog
                 }
 
                 
-                using var _ = HashSetPool<ISink>.Get(out var totalSinks);
+                var totalSinks = _threadLocalSinksCache.Value;
+                totalSinks.Clear();
 
                 lock (_lockFilterToSinks)
                 {
