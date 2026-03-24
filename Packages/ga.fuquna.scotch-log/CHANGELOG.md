@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 (2026-03-24)
+
+
+### Bug Fixes
+
+* LogDispatcher thread safe ([07ace1b](https://github.com/fuqunaga/ScotchLog/commit/07ace1be1a4646fa9f058f9e4bf04e4f6120e6f3))
+
 ## [0.3.0](https://github.com/fuqunaga/CategorizedLogging/compare/ga.fuquna.categorized-logging-v0.2.0...ga.fuquna.categorized-logging-v0.3.0) (2026-03-11)
 
 
