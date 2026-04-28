@@ -10,7 +10,7 @@ namespace ScotchLog
     [Serializable]
     public class MemorySink : ISink
     {
-        private readonly ConcurrentQueue<LogRecord> _logEntries = new();
+        private readonly ConcurrentQueue<LogEntry> _logEntries = new();
         
         // 別スレッドから呼ばれるので注意
         public event Action onLogEntryAddedMultiThreaded;
@@ -18,12 +18,12 @@ namespace ScotchLog
         
         public int Capacity { get; set; } = 1000;
         
-        public IEnumerable<LogRecord> LogEntries => _logEntries;
+        public IEnumerable<LogEntry> LogEntries => _logEntries;
 
 
-        public void Log(LogRecord logRecord)
+        public void Log(LogEntry logEntry)
         {
-            _logEntries.Enqueue(logRecord);
+            _logEntries.Enqueue(logEntry);
             
             // 古いログを削除
             // たぶんO(n)なのでパフォーマンスが気になったら別の方法を検討する

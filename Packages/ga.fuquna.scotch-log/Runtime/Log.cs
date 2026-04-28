@@ -25,95 +25,96 @@ namespace ScotchLog
 
 
         [HideInCallstack]
-        private static void EmitLog(LogRecord logRecord)
+        private static void EmitLog(LogEntry logEntry)
         {
-            LogDispatcher?.Log(logRecord);
-            AsyncLocalLogDispatcher?.Log(logRecord);
+            LogDispatcher?.Log(logEntry);
+            AsyncLocalLogDispatcher?.Log(logEntry);
+            logEntry.Dispose();
         }
 
   
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void EmitLog(LogLevel logLevel, string message, 
+        public static void EmitLog(LogLevel logLevel, in StringWrapper message, 
             [CallerFilePath] string callerFilePath = "", 
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
             )
         {
-            EmitLog(new LogRecord(logLevel, message,
+            EmitLog(LogEntry.Rent(logLevel, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
 
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Trace(string message,
+        public static void Trace(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Trace, message,
+            EmitLog(LogEntry.Rent(LogLevel.Trace, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Debug(string message,
+        public static void Debug(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Debug, message,
+            EmitLog(LogEntry.Rent(LogLevel.Debug, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
         
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Information(string message,
+        public static void Information(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Information, message,
+            EmitLog(LogEntry.Rent(LogLevel.Information, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Warning(string message,
+        public static void Warning(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Warning, message,
+            EmitLog(LogEntry.Rent(LogLevel.Warning, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Error(string message,
+        public static void Error(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Error, message,
+            EmitLog(LogEntry.Rent(LogLevel.Error, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Fatal(string message,
+        public static void Fatal(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(new LogRecord(LogLevel.Fatal, message,
+            EmitLog(LogEntry.Rent(LogLevel.Fatal, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
     }

@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace ScotchLog.Test.Editor
 {
     public class AllocationLog
     {
-        private static double MeasureAlloc(Action action, int count = 2000)
+        private static double MeasureAlloc(Action action, int count = 2000, string sampleName = null,
+            [CallerMemberName] string callerMemberName = "")
         {
             // ウォームアップ
             action();
@@ -15,14 +20,34 @@ namespace ScotchLog.Test.Editor
             GC.WaitForPendingFinalizers();
             GC.Collect();
 
-            var startBytes = GC.GetTotalMemory(true);
+            var resolvedSampleName = sampleName
+                ?? TestContext.CurrentContext?.Test?.Name
+                ?? callerMemberName
+                ?? nameof(MeasureAlloc);
+
+            var startBytes = GC.GetTotalMemory(false);
+            Profiler.BeginSample($"Alloc/{resolvedSampleName}");
             for (var i = 0; i < count; i++)
             {
                 action();
             }
-            var endBytes = GC.GetTotalMemory(true);
+            Profiler.EndSample();
+            var endBytes = GC.GetTotalMemory(false);
 
             return (double)(endBytes - startBytes) / count;
+        }
+
+        private static string FormatBytes(double bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            double len = bytes;
+            int order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len /= 1024;
+            }
+            return $"{len:F2} {sizes[order]}";
         }
 
         // -------------------------------------------------------
@@ -33,7 +58,7 @@ namespace ScotchLog.Test.Editor
         public void Alloc_NoScope_NoProperty()
         {
             var bytes = MeasureAlloc(() => Log.Debug("message"));
-            Debug.Log($"[NoScope/NoProp] {bytes:F2} bytes/call");
+            Debug.Log($"[NoScope/NoProp] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -50,7 +75,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             });
-            Debug.Log($"[OneScope/NoProp] {bytes:F2} bytes/call");
+            Debug.Log($"[OneScope/NoProp] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -67,7 +92,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             });
-            Debug.Log($"[OneScope/OneProp] {bytes:F2} bytes/call");
+            Debug.Log($"[OneScope/OneProp] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -87,7 +112,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             });
-            Debug.Log($"[OneScope/ThreeProps] {bytes:F2} bytes/call");
+            Debug.Log($"[OneScope/ThreeProps] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -105,7 +130,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             });
-            Debug.Log($"[NestedScope/NoProp] {bytes:F2} bytes/call");
+            Debug.Log($"[NestedScope/NoProp] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -123,7 +148,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             });
-            Debug.Log($"[NestedScope/WithProps] {bytes:F2} bytes/call");
+            Debug.Log($"[NestedScope/WithProps] {FormatBytes(bytes)}/call");
         }
 
         // -------------------------------------------------------
@@ -134,7 +159,7 @@ namespace ScotchLog.Test.Editor
         public void Alloc_LogDebug_1Time_NoScope()
         {
             var bytes = MeasureAlloc(() => Log.Debug("message"), count: 1);
-            Debug.Log($"[Debug x1/NoScope] {bytes:F2} bytes/call");
+            Debug.Log($"[Debug x1/NoScope] {FormatBytes(bytes)}/call");
         }
 
         [Test]
@@ -144,7 +169,7 @@ namespace ScotchLog.Test.Editor
             {
                 for (var i = 0; i < 100; i++) Log.Debug("message");
             }, count: 100);
-            Debug.Log($"[Debug x100/NoScope] {bytes / 100:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x100/NoScope] {FormatBytes(bytes / 100)}/call (total {FormatBytes(bytes)}/iteration)");
         }
 
         [Test]
@@ -154,7 +179,7 @@ namespace ScotchLog.Test.Editor
             {
                 for (var i = 0; i < 1000; i++) Log.Debug("message");
             }, count: 100);
-            Debug.Log($"[Debug x1000/NoScope] {bytes / 1000:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x1000/NoScope] {FormatBytes(bytes / 1000)}/call (total {FormatBytes(bytes)}/iteration)");
         }
 
         [Test]
@@ -164,7 +189,7 @@ namespace ScotchLog.Test.Editor
             {
                 for (var i = 0; i < 10000; i++) Log.Debug("message");
             }, count: 100);
-            Debug.Log($"[Debug x10000/NoScope] {bytes / 10000:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x10000/NoScope] {FormatBytes(bytes / 10000)}/call (total {FormatBytes(bytes)}/iteration)");
         }
 
         // -------------------------------------------------------
@@ -181,7 +206,7 @@ namespace ScotchLog.Test.Editor
                     Log.Debug("message");
                 }
             }, count: 1);
-            Debug.Log($"[Debug x1/WithScope] {bytes:F2} bytes/call");
+            Debug.Log($"[Debug x1/WithScope] {FormatBytes(bytes)}/call");
         }
 
         [Test]
@@ -194,7 +219,7 @@ namespace ScotchLog.Test.Editor
                     for (var i = 0; i < 100; i++) Log.Debug("message");
                 }
             }, count: 100);
-            Debug.Log($"[Debug x100/WithScope] {bytes / 100:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x100/WithScope] {FormatBytes(bytes / 100)}/call (total {FormatBytes(bytes)}/iteration)");
         }
 
         [Test]
@@ -207,7 +232,7 @@ namespace ScotchLog.Test.Editor
                     for (var i = 0; i < 1000; i++) Log.Debug("message");
                 }
             }, count: 100);
-            Debug.Log($"[Debug x1000/WithScope] {bytes / 1000:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x1000/WithScope] {FormatBytes(bytes / 1000)}/call (total {FormatBytes(bytes)}/iteration)");
         }
 
         [Test]
@@ -220,7 +245,89 @@ namespace ScotchLog.Test.Editor
                     for (var i = 0; i < 10000; i++) Log.Debug("message");
                 }
             }, count: 100);
-            Debug.Log($"[Debug x10000/WithScope] {bytes / 10000:F2} bytes/call (total {bytes:F2} bytes/iteration)");
+            Debug.Log($"[Debug x10000/WithScope] {FormatBytes(bytes / 10000)}/call (total {FormatBytes(bytes)}/iteration)");
+        }
+
+        // -------------------------------------------------------
+        // 大量 float を "," 区切り文字列にして Log.Debug する
+        // -------------------------------------------------------
+
+        private static float[] CreateSequentialFloats(int count)
+        {
+            var values = new float[count];
+            for (var i = 0; i < count; i++)
+            {
+                values[i] = i * 0.1f;
+            }
+            return values;
+        }
+
+        private static string BuildFloatCsv(float[] values) =>
+            values.Length == 0
+                ? string.Empty
+                : string.Join(",", values.Select(v => v.ToString("G9", CultureInfo.InvariantCulture)));
+
+        private static double MeasureFloatCsvLogAlloc(int floatCount, int measureCount, bool withScope = false)
+        {
+            var values = CreateSequentialFloats(floatCount);
+            var message = BuildFloatCsv(values);
+            return MeasureAlloc(() =>
+            {
+                if (withScope)
+                {
+                    using (Log.BeginScope("Scope").SetProperty("env", "prod"))
+                    {
+                        Log.Debug(message);
+                    }
+                }
+                else
+                {
+                    Log.Debug(message);
+                }
+            }, measureCount);
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_100_NoScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 100, measureCount: 500);
+            Debug.Log($"[Debug/FloatCsv x100/NoScope] {FormatBytes(bytes)}/call");
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_1000_NoScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 1000, measureCount: 200);
+            Debug.Log($"[Debug/FloatCsv x1000/NoScope] {FormatBytes(bytes)}/call");
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_10000_NoScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 10000, measureCount: 50);
+            Debug.Log($"[Debug/FloatCsv x10000/NoScope] {FormatBytes(bytes)}/call");
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_100_WithScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 100, measureCount: 500, withScope: true);
+            Debug.Log($"[Debug/FloatCsv x100/WithScope] {FormatBytes(bytes)}/call");
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_1000_WithScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 1000, measureCount: 200, withScope: true);
+            Debug.Log($"[Debug/FloatCsv x1000/WithScope] {FormatBytes(bytes)}/call");
+        }
+
+        [Test]
+        public void Alloc_LogDebug_FloatCsv_10000_WithScope()
+        {
+            var bytes = MeasureFloatCsvLogAlloc(floatCount: 10000, measureCount: 50, withScope: true);
+            Debug.Log($"[Debug/FloatCsv x10000/WithScope] {FormatBytes(bytes)}/call");
         }
     }
 }
+

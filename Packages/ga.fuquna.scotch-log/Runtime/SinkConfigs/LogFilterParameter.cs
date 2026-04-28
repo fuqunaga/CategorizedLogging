@@ -29,14 +29,14 @@ namespace ScotchLog
         }
 
         
-        public bool IsMatch(LogRecord logRecord)
+        public bool IsMatch(LogEntry logEntry)
         {
-            if (logRecord.LogLevel < minimumLogLevel)
+            if (logEntry.LogLevel < minimumLogLevel)
             {
                 return false;
             }
             
-            var scope = logRecord.Scope;
+            var scope = logEntry.Scope;
             while (scope != null)
             {
                 if (IsMatch(scope))

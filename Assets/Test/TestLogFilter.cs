@@ -111,7 +111,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Debug);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("scope"))
             {
@@ -126,7 +126,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Warning);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("scope"))
             {
@@ -145,7 +145,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Trace);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("AnyScopeName"))
             {
@@ -160,7 +160,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("MyScope", LogLevel.Trace);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("MyScope"))
             {
@@ -175,7 +175,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("OtherScope", LogLevel.Trace);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("MyScope"))
             {
@@ -194,7 +194,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Trace, new List<LogScopeProperty> { ("env", "prod") });
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("scope").SetProperty("env", "prod"))
             {
@@ -209,7 +209,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Trace, new List<LogScopeProperty> { ("env", "prod") });
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("scope").SetProperty("env", "dev"))
             {
@@ -224,7 +224,7 @@ namespace ScotchLog.Test.Editor
         {
             var filter = CreateFilter("*", LogLevel.Trace, null);
 
-            LogRecord captured = null;
+            LogEntry captured = null;
             using (Log.Listen(filter, e => captured = e))
             using (Log.BeginScope("scope"))
             {
