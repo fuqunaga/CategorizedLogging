@@ -76,6 +76,29 @@ public struct StringWrapper : IDisposable
     {
         return new StringWrapper(str);
     }
+
+    public static unsafe implicit operator StringWrapper(in ReadOnlySpan<char> span)
+    {
+        var dst = new NativeText(checked(span.Length * 4), Allocator);
+        if (span.IsEmpty)
+        {
+            return new StringWrapper(dst);
+        }
+
+        fixed (char* chars = span)
+        {
+            var error = UTF8ArrayUnsafeUtility.Copy(dst.GetUnsafePtr(), out var actualBytes, dst.Capacity, chars, span.Length);
+            if (error != CopyError.None)
+            {
+                dst.Dispose();
+                throw new ArgumentException("Failed to encode the provided span as UTF-8.", nameof(span));
+            }
+
+            dst.Length = actualBytes;
+        }
+
+        return new StringWrapper(dst);
+    }
     
     public static implicit operator StringWrapper(in NativeText nativeText)
     {
