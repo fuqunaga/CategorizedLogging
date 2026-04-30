@@ -9,9 +9,9 @@ namespace ScotchLog
     /// </summary>
     public class ListenerSink : ISink
     {
-        private readonly Action<LogRecord> _callback;
+        private readonly Action<LogEntry> _callback;
         
-        public ListenerSink(Action<LogRecord>　callback)
+        public ListenerSink(Action<LogEntry>　callback)
         {
             _callback = callback;
         }
@@ -21,9 +21,9 @@ namespace ScotchLog
             _callback = (record) => callback(record?.Message);
         }
         
-        public void Log(LogRecord logRecord)
+        public void Log(LogEntry logEntry)
         {
-            _callback?.Invoke(logRecord);
+            _callback?.Invoke(logEntry);
         }
     }
 }

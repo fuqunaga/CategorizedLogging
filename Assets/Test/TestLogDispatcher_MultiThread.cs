@@ -16,14 +16,18 @@ namespace ScotchLog.Test.Editor
             private int _count;
             public int Count => _count;
 
-            public void Log(LogRecord logRecord)
+            public void Log(LogEntry logEntry)
             {
                 Interlocked.Increment(ref _count);
             }
         }
 
-        private static LogRecord MakeRecord() =>
-            new(LogLevel.Information, "test", default);
+        private static LogEntry MakeRecord()
+        {
+            var entry = new LogEntry();
+            entry.Set(LogLevel.Information, "test", default);
+            return entry;
+        }
 
         /// <summary>
         /// 複数スレッドから同時に Log() を呼ぶと HashSetPool の競合により

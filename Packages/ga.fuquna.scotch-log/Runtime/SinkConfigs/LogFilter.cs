@@ -39,9 +39,9 @@ namespace ScotchLog
             filterParameters = other.filterParameters.Select(p => new LogFilterParameter(p)).ToList();
         }
 
-        public bool IsMatch(LogRecord logRecord)
+        public bool IsMatch(LogEntry logEntry)
         {
-            return filterParameters.Any(filterParameter => filterParameter.IsMatch(logRecord));
+            return filterParameters.Any(filterParameter => filterParameter.IsMatch(logEntry));
         }
     }
 }

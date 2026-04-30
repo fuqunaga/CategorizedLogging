@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Unity.Collections;
 
 namespace ScotchLog
 {
@@ -10,28 +10,33 @@ namespace ScotchLog
     [Serializable]
     public class MemorySink : ISink
     {
-        private readonly ConcurrentQueue<LogRecord> _logEntries = new();
-        
+        private static readonly Action<LogEntry> DisposeLogEntry = entry => entry?.Dispose();
+
+        private ConcurrentRingBuffer<LogEntry> _logEntries = new(1000, DisposeLogEntry);
+
         // 別スレッドから呼ばれるので注意
         public event Action onLogEntryAddedMultiThreaded;
 
-        
-        public int Capacity { get; set; } = 1000;
-        
-        public IEnumerable<LogRecord> LogEntries => _logEntries;
-
-
-        public void Log(LogRecord logRecord)
+        public int Capacity
         {
-            _logEntries.Enqueue(logRecord);
-            
-            // 古いログを削除
-            // たぶんO(n)なのでパフォーマンスが気になったら別の方法を検討する
-            while (_logEntries.Count > Capacity)
-            {
-                _logEntries.TryDequeue(out _);
-            }
-            
+            get => _logEntries.Capacity;
+            set => _logEntries.Capacity = value;
+        }
+
+        public IEnumerable<LogEntry> LogEntries => _logEntries;
+
+        public void Log(LogEntry logEntry)
+        {
+            // StringWrapperをPersistantにしてコピー
+            var copiedEntry = LogEntry.Rent(
+                logEntry.LogLevel,
+                logEntry.StringWrapper.Clone(Allocator.Persistent),
+                logEntry.CallerInfo,
+                logEntry.Scope
+            );
+
+            _logEntries.Add(copiedEntry);
+
             onLogEntryAddedMultiThreaded?.Invoke();
         }
 

@@ -26,15 +26,15 @@ namespace ScotchLog.Test.Editor
         [Test]
         public void Listen_LogLevel_RecordCallback_ReceivesRecord()
         {
-            var received = new List<LogRecord>();
-            using (Log.Listen(LogLevel.Trace, (LogRecord r) => received.Add(r)))
+            var received = new List<(LogLevel logLevel, string message)>();
+            using (Log.Listen(LogLevel.Trace, r => received.Add((r.LogLevel, r.Message))))
             {
                 Log.Warning("warn");
             }
 
             Assert.That(received, Has.Count.EqualTo(1));
-            Assert.That(received[0].LogLevel, Is.EqualTo(LogLevel.Warning));
-            Assert.That(received[0].Message, Is.EqualTo("warn"));
+            Assert.That(received[0].logLevel, Is.EqualTo(LogLevel.Warning));
+            Assert.That(received[0].message, Is.EqualTo("warn"));
         }
 
         // ─── LogFilter overload + Action<string> ─────────────────────────
@@ -59,16 +59,16 @@ namespace ScotchLog.Test.Editor
         [Test]
         public void Listen_LogFilter_RecordCallback_FiltersCorrectly()
         {
-            var received = new List<LogRecord>();
+            var received = new List<LogLevel>();
             var filter = LogFilter.Create(LogLevel.Error);
-            using (Log.Listen(filter, (LogRecord r) => received.Add(r)))
+            using (Log.Listen(filter, r => received.Add(r.LogLevel)))
             {
                 Log.Information("info"); // filtered out
                 Log.Error("err");
             }
 
             Assert.That(received, Has.Count.EqualTo(1));
-            Assert.That(received[0].LogLevel, Is.EqualTo(LogLevel.Error));
+            Assert.That(received[0], Is.EqualTo(LogLevel.Error));
         }
 
         // ─── Dispose でリッスンが停止する ─────────────────────────────────
@@ -77,7 +77,7 @@ namespace ScotchLog.Test.Editor
         public void Listen_AfterDispose_NoLongerReceives()
         {
             var received = new List<string>();
-            using (Log.Listen(LogLevel.Trace, (string msg) => received.Add(msg)))
+            using (Log.Listen(LogLevel.Trace, received.Add))
             {
                 Log.Information("inside");
             }
@@ -92,8 +92,8 @@ namespace ScotchLog.Test.Editor
         [Test]
         public async Task Listen_AcrossAwait_StillReceivesRecord()
         {
-            var received = new List<LogRecord>();
-            using (Log.Listen(LogLevel.Trace, (LogRecord r) => received.Add(r)))
+            var received = new List<string>();
+            using (Log.Listen(LogLevel.Trace, r => received.Add(r.Message)))
             {
                 // ConfigureAwait(false) で継続が別スレッドになる可能性あり
                 await Task.Yield();
@@ -103,8 +103,8 @@ namespace ScotchLog.Test.Editor
             }
 
             Assert.That(received, Has.Count.EqualTo(2));
-            Assert.That(received[0].Message, Is.EqualTo("after yield"));
-            Assert.That(received[1].Message, Is.EqualTo("from Task.Run"));
+            Assert.That(received[0], Is.EqualTo("after yield"));
+            Assert.That(received[1], Is.EqualTo("from Task.Run"));
         }
 
         [Test]
@@ -124,8 +124,8 @@ namespace ScotchLog.Test.Editor
         [Test]
         public async Task Listen_TaskRun_ReceivesLog()
         {
-            var received = new List<LogRecord>();
-            using (Log.Listen(LogLevel.Trace, (LogRecord r) => received.Add(r)))
+            var received = new List<string>();
+            using (Log.Listen(LogLevel.Trace, (r) => received.Add(r.Message)))
             {
                 await Task.Run(() =>
                 {
@@ -134,7 +134,7 @@ namespace ScotchLog.Test.Editor
             }
 
             Assert.That(received, Has.Count.EqualTo(1));
-            Assert.That(received[0].Message, Is.EqualTo("from thread pool"));
+            Assert.That(received[0], Is.EqualTo("from thread pool"));
         }
     }
 }

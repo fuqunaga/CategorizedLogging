@@ -34,7 +34,7 @@ namespace ScotchLog
         
         
         [HideInCallstack]
-        public void Log(LogRecord logRecord)
+        public void Log(LogEntry logEntry)
         {
             _threadRecursionDepth.Value++;
             try
@@ -45,7 +45,7 @@ namespace ScotchLog
                     return;
                 }
 
-                if (logRecord.LogLevel == LogLevel.None)
+                if (logEntry.LogLevel == LogLevel.None)
                 {
                     return;
                 }
@@ -58,7 +58,7 @@ namespace ScotchLog
                 {
                     foreach(var (filter, sinks) in _filterToSinks)
                     {
-                        if (filter.IsMatch(logRecord))
+                        if (filter.IsMatch(logEntry))
                         {
                             totalSinks.UnionWith(sinks);
                         }
@@ -67,7 +67,7 @@ namespace ScotchLog
 
                 foreach (var sink in totalSinks)
                 {
-                    sink.Log(logRecord);
+                    sink.Log(logEntry);
                 }
             }
             finally

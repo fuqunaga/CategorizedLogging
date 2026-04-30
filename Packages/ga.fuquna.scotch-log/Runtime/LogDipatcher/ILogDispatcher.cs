@@ -4,7 +4,7 @@ namespace ScotchLog
 {
     public interface ILogDispatcher
     {
-        void Log(LogRecord logRecord);
+        void Log(LogEntry logEntry);
         public void Register(ISink sink, LogFilter logFilter);
         public void Unregister(ISink sink);
     }

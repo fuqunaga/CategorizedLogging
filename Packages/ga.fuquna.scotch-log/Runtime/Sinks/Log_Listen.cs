@@ -18,7 +18,7 @@ namespace ScotchLog
         /// Starts listening to log messages on the current thread with the specified log level filter.
         /// </summary>
         [MustDisposeResource]
-        public static AsyncLocalSinkScope Listen(LogLevel logLevel, Action<LogRecord> logCallback)
+        public static AsyncLocalSinkScope Listen(LogLevel logLevel, Action<LogEntry> logCallback)
         {
             return new AsyncLocalSinkScope(new ListenerSink(logCallback), logLevel);
         }
@@ -36,7 +36,7 @@ namespace ScotchLog
         /// Starts listening to log messages on the current thread with the specified log level filter.
         /// </summary>
         [MustDisposeResource]
-        public static AsyncLocalSinkScope Listen(LogFilter filter,  Action<LogRecord> logCallback)
+        public static AsyncLocalSinkScope Listen(LogFilter filter,  Action<LogEntry> logCallback)
         {
             return new AsyncLocalSinkScope(new ListenerSink(logCallback), filter);
         }
