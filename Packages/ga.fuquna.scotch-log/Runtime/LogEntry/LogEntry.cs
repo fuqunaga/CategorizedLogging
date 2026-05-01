@@ -10,7 +10,7 @@ namespace ScotchLog
     /// 長期間保持する必要があるSinkは自前でデータを別の型にコピーする必要がある
     /// ディスパッチ後Dispose()が呼ばれる
     /// </summary>
-    public record LogEntry : IDisposable
+    public class LogEntry : IDisposable
     {
         private static readonly ConcurrentObjectPool<LogEntry> Pool = new(
             createFunc: () => new LogEntry(),

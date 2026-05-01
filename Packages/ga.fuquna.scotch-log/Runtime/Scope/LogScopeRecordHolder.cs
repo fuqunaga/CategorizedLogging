@@ -10,20 +10,17 @@ namespace ScotchLog.Scope;
 /// </summary>
 public readonly record struct LogScopeRecordHolder : IDisposable
 {
-    private readonly LogScopeRecord _record;
+    public　LogScopeRecord Record { get; }
 
-    
-    public　LogScopeRecord Record => _record;
 
-    
     public LogScopeRecordHolder(LogScopeRecord record)
     {
-        _record = record;
-        _record.AddReference();
+        Record = record;
+        Record.AddReference();
     }
     
     public void Dispose()
     {
-        _record?.RemoveReference();
+        Record?.RemoveReference();
     }
 }

@@ -9,7 +9,7 @@ namespace ScotchLog.Scope;
 /// ログスコープの実態
 /// 複数スレッドから参照されること想定してclass型
 /// </summary>
-public record LogScopeRecord
+public class LogScopeRecord
 {
     #region Static members
 
@@ -145,6 +145,15 @@ public record LogScopeRecord
         }
     }
 
+    public　bool HasEnded
+    {
+        get
+        {
+            ThrowIfAlreadyDeactivated();
+            return EndTimeUtc != default;
+        }
+    }
+    
     
     private void Activate()
     {
@@ -225,7 +234,7 @@ public record LogScopeRecord
 
     public void RemoveReference()
     {
-        if (Interlocked.Decrement(ref _referenceCount) <= 0)
+        if (Interlocked.Decrement(ref _referenceCount) <= 0 && HasEnded)
         {
             Pool.Release(this);
         }

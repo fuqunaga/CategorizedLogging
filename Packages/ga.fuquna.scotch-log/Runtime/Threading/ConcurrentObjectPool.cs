@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine.Pool;
 
 namespace ScotchLog;
@@ -6,7 +8,17 @@ namespace ScotchLog;
 public class ConcurrentObjectPool<T> : IObjectPool<T>
     where T : class
 {
-    private readonly ConcurrentHashSet<T> _pool = new();
+    // T はクラス型なので参照同一性（reference identity）で同値判定する。
+    // value-based の GetHashCode/Equals に依存すると、Dispose 済みオブジェクトを
+    // プールに戻す際に内部フィールドへのアクセスで例外が発生する可能性がある。
+    private sealed class ReferenceComparer : IEqualityComparer<T>
+    {
+        public static readonly ReferenceComparer Instance = new();
+        public bool Equals(T x, T y) => ReferenceEquals(x, y);
+        public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
+    }
+
+    private readonly ConcurrentHashSet<T> _pool = new(ReferenceComparer.Instance);
 
     private readonly Func<T> _createFunc;
     private readonly Action<T> _actionOnGet;
