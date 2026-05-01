@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using ScotchLog.Scope;
 
 namespace ScotchLog
@@ -13,29 +12,27 @@ namespace ScotchLog
     /// </summary>
     public record LogEntry : IDisposable
     {
-        private static readonly ConcurrentQueue<LogEntry> Pool = new();
+        private static readonly ConcurrentObjectPool<LogEntry> Pool = new(
+            createFunc: () => new LogEntry(),
+            actionOnGet: entry => entry.IsDisposed = false,
+            actionOnRelease: entry => entry.Clear()
+        );
 
-        private static LogEntry RentOrCreate()
+        public static LogEntry Rent(LogLevel logLevel, in StringWrapper message, in CallerInformation callerInfoInformation, LogSpanRecord scope = null)
         {
-            return Pool.TryDequeue(out var logEntry) ? logEntry : new LogEntry();
-        }
-        
-        public static LogEntry Rent(LogLevel logLevel, in StringWrapper message, in CallerInformation callerInfoInformation, LogScopeRecord scope = null)
-        {
-            var entry = RentOrCreate();
+            var entry = Pool.Get();
             entry.Set(logLevel, message, callerInfoInformation, scope);
             return entry;
         }
 
         public static void Return(LogEntry logEntry)
         {
-            if (logEntry == null || logEntry.IsDisposed)
+            if (logEntry == null ||  logEntry.IsDisposed)
             {
                 return;
             }
 
-            logEntry.ReleaseForPool();
-            Pool.Enqueue(logEntry);
+            Pool.Release(logEntry);
         }
 
 
@@ -43,7 +40,7 @@ namespace ScotchLog
         private LogLevel _logLevel;
         private StringWrapper _stringWrapper;
         private CallerInformation _callerInfo;
-        private LogScopeRecord _scope;
+        private LogSpan _span;
 
 
         public DateTime Timestamp
@@ -82,12 +79,12 @@ namespace ScotchLog
             }
         }
 
-        public LogScopeRecord Scope
+        public LogSpan Span
         {
             get
             {
                 ThrowIfDisposed();
-                return _scope;
+                return _span;
             }
         }
         
@@ -103,15 +100,15 @@ namespace ScotchLog
         public bool IsDisposed { get; private set; }
 
         
-        public void Set(LogLevel logLevel, in StringWrapper message, in CallerInformation callerInfoInformation, LogScopeRecord scope = null)
+        public void Set(LogLevel logLevel, in StringWrapper message, in CallerInformation callerInfoInformation, in LogSpan? span = null)
         {
+            ThrowIfDisposed();
+            
             _timestamp = DateTime.Now;
             _logLevel = logLevel;
             _stringWrapper = message;
             _callerInfo = callerInfoInformation;
-            _scope = scope ?? LogScopeRecord.Current;
-            
-            IsDisposed = false;
+            _span = span ?? LogSpan.Current;
         }
 
         public void CopyFrom(LogEntry source)
@@ -122,7 +119,7 @@ namespace ScotchLog
             _logLevel = source.LogLevel;
             _stringWrapper = source.StringWrapper.Clone();
             _callerInfo = source.CallerInfo;
-            _scope = source.Scope;
+            _span = source.Span;
 
             IsDisposed = false;
         }
@@ -130,20 +127,19 @@ namespace ScotchLog
 
         public override string ToString()
         {
+            ThrowIfDisposed();
             return $"[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}][{LogLevel}] {Message}";
         }
 
-        public void Dispose()
-        {
-            Return(this);
-        }
+        public void Dispose() => Return(this);
 
-        private void ReleaseForPool()
+        private void Clear()
         {
             IsDisposed = true;
+            
             _stringWrapper.Dispose();
             _stringWrapper = default;
-            _scope = null;
+            _span = default;
             _callerInfo = default;
             _timestamp = default;
             _logLevel = default;
