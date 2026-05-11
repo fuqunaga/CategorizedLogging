@@ -104,6 +104,49 @@ namespace ScotchLog.Test.Editor
             scope.Dispose();
         }
 
+        [Test]
+        public void SetProperty_WithCallerArgumentExpression_UsesVariableNameAsKey()
+        {
+            const string requestId = "req-001";
+            var scope = Log.BeginScope("callerArg").SetProperty(requestId);
+
+            var props = LogScopeRecord.Current.Properties;
+            Assert.That(props, Contains.Key("requestId"));
+            Assert.That(props["requestId"], Is.EqualTo("req-001"));
+
+            scope.Dispose();
+        }
+
+        [Test]
+        public void SetProperty_WithExplicitName_StoresProvidedKey()
+        {
+            const string requestId = "req-override";
+            var scope = Log.BeginScope("callerArgOverride")
+                .SetProperty("correlationId", requestId);
+
+            var props = LogScopeRecord.Current.Properties;
+            Assert.That(props, Contains.Key("correlationId"));
+            Assert.That(props["correlationId"], Is.EqualTo("req-override"));
+            Assert.That(props, Does.Not.ContainKey("requestId"));
+
+            scope.Dispose();
+        }
+
+        [Test]
+        public void SetProperty_WithCallerArgumentExpression_NullValueStoredAsNull()
+        {
+            var optionalMessage = CreateNullMessage();
+            var scope = Log.BeginScope("callerArgNull").SetProperty(optionalMessage);
+
+            var props = LogScopeRecord.Current.Properties;
+            Assert.That(props, Contains.Key("optionalMessage"));
+            Assert.That(props["optionalMessage"], Is.Null);
+
+            scope.Dispose();
+
+            string CreateNullMessage() => null;
+        }
+
         // ─── Log エントリにスコープが付与されること ────────────────────────────
         // LogEntry はディスパッチ後にプールに返却（Dispose）されるため、
         // Scope などのプロパティはコールバック内で取り出す必要があります。
