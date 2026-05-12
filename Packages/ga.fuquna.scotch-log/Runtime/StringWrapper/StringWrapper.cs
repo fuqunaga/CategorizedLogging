@@ -12,7 +12,7 @@ public struct StringWrapper : IDisposable
     
     
     private NativeText _nativeText;
-    private readonly string _string;
+    private string _string;
 
 
     private StringWrapper(NativeText nativeText)
@@ -28,7 +28,7 @@ public struct StringWrapper : IDisposable
     }
     
     
-    public override string ToString() => _string ?? _nativeText.ToString();
+    public override string ToString() => _string ??= _nativeText.ToString();
 
 
     public StringWrapper Clone(Allocator? allocator = null)
