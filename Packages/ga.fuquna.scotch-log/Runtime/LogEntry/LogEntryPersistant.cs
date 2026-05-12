@@ -14,8 +14,10 @@ public readonly struct LogEntryPersistant : IDisposable
     public LogLevel LogLevel { get; }
     public StringWrapper StringWrapper { get; }
     public CallerInformation CallerInfo { get; }
-    public LogScopeRecordHolder Scope { get; }
+    public LogScopeRecordHolder ScopeHolder { get; }
 
+    public string Message => StringWrapper.ToString();
+    public LogScopeRecord Scope => ScopeHolder.Record;
     
     public LogEntryPersistant(LogEntry logEntry)
     {
@@ -23,12 +25,12 @@ public readonly struct LogEntryPersistant : IDisposable
         LogLevel = logEntry.LogLevel;
         StringWrapper = logEntry.StringWrapper.Clone(Allocator.Persistent);
         CallerInfo = logEntry.CallerInfo;
-        Scope = logEntry.Scope.CreateHolder();
+        ScopeHolder = logEntry.Scope.CreateHolder();
     }
 
     public void Dispose()
     {
         StringWrapper.Dispose();
-        Scope.Dispose();
+        ScopeHolder.Dispose();
     }
 }

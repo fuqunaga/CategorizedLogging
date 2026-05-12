@@ -194,6 +194,39 @@ namespace ScotchLog.Test.Editor
             Assert.That(capturedValue, Is.EqualTo("auth"));
         }
 
+        [Test]
+        public void BeginScope_ListenerCapturedLog_KeepsScopeAfterScopeDisposed()
+        {
+            LogEntryPersistant captured = default;
+            var hasCaptured = false;
+
+            try
+            {
+                using (Log.Listen(LogLevel.Trace, e =>
+                       {
+                           captured = new LogEntryPersistant(e);
+                           hasCaptured = true;
+                       }))
+                {
+                    using (Log.BeginScope("persistedScope").SetProperty("requestId", "req-keep"))
+                    {
+                        Log.Debug("persist test");
+                    }
+                }
+
+                Assert.That(hasCaptured, Is.True);
+                Assert.That(captured.Scope.Name, Is.EqualTo("persistedScope"));
+                Assert.That(captured.Scope.Properties["requestId"], Is.EqualTo("req-keep"));
+            }
+            finally
+            {
+                if (hasCaptured)
+                {
+                    captured.Dispose();
+                }
+            }
+        }
+
         // ─── Log.BeginPropertyScope ───────────────────────────────────────────
 
         [Test]

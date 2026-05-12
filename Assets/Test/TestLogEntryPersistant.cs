@@ -90,7 +90,7 @@ namespace ScotchLog.Test.Editor
             entry.Dispose();
             scope.Dispose();
 
-            Assert.That(persistant.Scope.Record, Is.Not.Null);
+            Assert.That(persistant.Scope, Is.Not.Null);
 
             persistant.Dispose();
         }
@@ -104,7 +104,7 @@ namespace ScotchLog.Test.Editor
             entry.Dispose();
             scope.Dispose();  // スコープを先に Dispose してもホルダーが保持
 
-            Assert.That(persistant.Scope.Record.Name, Is.EqualTo("namedScope"));
+            Assert.That(persistant.Scope.Name, Is.EqualTo("namedScope"));
 
             persistant.Dispose();
         }

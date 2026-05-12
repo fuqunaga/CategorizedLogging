@@ -159,6 +159,22 @@ namespace ScotchLog.Test.Editor
             Assert.That(entries[1].Message, Is.EqualTo("new2"));
         }
 
+        [Test]
+        public void Log_ScopeAtLogTime_RemainsReadableAfterScopeDisposed()
+        {
+            var sink = new MemorySink();
+
+            using (Log.BeginScope("request").SetProperty("requestId", "req-001"))
+            {
+                sink.Log(MakeEntry(LogLevel.Debug, "scope test"));
+            }
+
+            var stored = sink.LogEntries.First();
+            Assert.That(stored.Scope, Is.Not.Null);
+            Assert.That(stored.Scope.Name, Is.EqualTo("request"));
+            Assert.That(stored.Scope.Properties["requestId"], Is.EqualTo("req-001"));
+        }
+
         // ─── NativeText（TempJob）バックの StringWrapper は Persistent にクローンされる ──
 
         /// <summary>
