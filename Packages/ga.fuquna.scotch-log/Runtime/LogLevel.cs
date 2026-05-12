@@ -11,7 +11,7 @@ namespace ScotchLog
         Information,
         Warning,
         Error,
-        Fatal,
+        Critical,
         None
     }
 
@@ -24,7 +24,7 @@ namespace ScotchLog
             { LogLevel.Information, ColorUtility.ToHtmlStringRGB(new Color(0.95f, 0.95f, 0.95f)) },
             { LogLevel.Warning, ColorUtility.ToHtmlStringRGB(new Color(1f, 0.8f, 0f)) },
             { LogLevel.Error, ColorUtility.ToHtmlStringRGB(new Color(1f, 0.3f, 0.2f)) },
-            { LogLevel.Fatal, ColorUtility.ToHtmlStringRGB(new Color(0.9f, 0.2f, 0.9f)) },
+            { LogLevel.Critical, ColorUtility.ToHtmlStringRGB(new Color(0.9f, 0.2f, 0.9f)) },
             { LogLevel.None, ColorUtility.ToHtmlStringRGB(Color.clear) }
         };
         
@@ -37,7 +37,7 @@ namespace ScotchLog
                 LogLevel.Information => "INFO",
                 LogLevel.Warning => "WARN",
                 LogLevel.Error => "ERROR",
-                LogLevel.Fatal => "FATAL",
+                LogLevel.Critical => "CRIT",
                 LogLevel.None => "NONE",
                 _ => throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null)
             };

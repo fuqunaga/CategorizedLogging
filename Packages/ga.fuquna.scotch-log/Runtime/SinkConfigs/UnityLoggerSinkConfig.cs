@@ -10,7 +10,7 @@ namespace ScotchLog
         public UnityLogTypeWithNone informationLogType = UnityLogTypeWithNone.Log;
         public UnityLogTypeWithNone warningLogType = UnityLogTypeWithNone.Warning;	
         public UnityLogTypeWithNone errorLogType = UnityLogTypeWithNone.Error;
-        public UnityLogTypeWithNone fatalLogType = UnityLogTypeWithNone.Error;
+        public UnityLogTypeWithNone criticalLogType = UnityLogTypeWithNone.Error;
         
         protected override void OnValidate()
         {
@@ -26,7 +26,7 @@ namespace ScotchLog
             Sink.LogLevelToUnityLogTypeTable[LogLevel.Information] = informationLogType.ToLogType();
             Sink.LogLevelToUnityLogTypeTable[LogLevel.Warning] = warningLogType.ToLogType();
             Sink.LogLevelToUnityLogTypeTable[LogLevel.Error] = errorLogType.ToLogType();
-            Sink.LogLevelToUnityLogTypeTable[LogLevel.Fatal] = fatalLogType.ToLogType();
+            Sink.LogLevelToUnityLogTypeTable[LogLevel.Critical] = criticalLogType.ToLogType();
         }
     }
 }
