@@ -6,7 +6,7 @@ namespace ScotchLog
 {
     public class UnityLoggerSink : ISink
     {
-        public Func<LogEntry, string> LogEntryToMessageFormatter { get; set; } = logRecord => logRecord.ToString();
+        public Func<LogEntry, string> LogEntryToMessage { get; set; } = logRecord => logRecord.ToString();
         
         public ConcurrentDictionary<LogLevel, LogType?> LogLevelToUnityLogTypeTable { get; } = new()
         {
@@ -27,7 +27,7 @@ namespace ScotchLog
                 && unityLogType is { } logType
                )
             {
-                Debug.unityLogger.Log(logType, LogEntryToMessageFormatter(logEntry));
+                Debug.unityLogger.Log(logType, LogEntryToMessage(logEntry));
             }
         }
     }
