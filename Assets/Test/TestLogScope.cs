@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ScotchLog.Scope;
 
@@ -244,6 +246,252 @@ namespace ScotchLog.Test.Editor
             Assert.That(capturedValue, Is.EqualTo("req-123"));
         }
 
+        // ─── AsyncLocal 準拠のスコープ伝播 ───────────────────────────────────
+
+        [Test]
+        public async Task BeginScope_AcrossAwait_InheritsParentScopeState()
+        {
+            using var scope = Log.BeginScope("asyncParent").SetProperty("requestId", "req-async");
+
+            await Task.Delay(1).ConfigureAwait(false);
+
+            Assert.That(LogScopeRecord.Current.Name, Is.EqualTo("asyncParent"));
+            Assert.That(LogScopeRecord.Current.Properties["requestId"], Is.EqualTo("req-async"));
+        }
+
+        [Test]
+        public async Task BeginScope_TaskRun_InheritsParentScopeState()
+        {
+            using var scope = Log.BeginScope("taskParent");
+            string childScopeName = null;
+
+            await Task.Run(() =>
+            {
+                childScopeName = LogScopeRecord.Current.Name;
+            });
+
+            Assert.That(childScopeName, Is.EqualTo("taskParent"));
+        }
+
+        [Test]
+        public async Task BeginScope_TaskRun_ChildScopeDoesNotAffectParentScope()
+        {
+            using var parentScope = Log.BeginScope("parentTask");
+            string childNestedScopeName = null;
+
+            await Task.Run(() =>
+            {
+                using (Log.BeginScope("childTask"))
+                {
+                    childNestedScopeName = LogScopeRecord.Current.Name;
+                }
+            });
+
+            Assert.That(childNestedScopeName, Is.EqualTo("childTask"));
+            Assert.That(LogScopeRecord.Current.Name, Is.EqualTo("parentTask"));
+        }
+
+        [Test]
+        public void BeginScope_NewThread_InheritsParentScope_AndChildScopeDoesNotAffectParent()
+        {
+            using var parentScope = Log.BeginScope("parentThread");
+            string childScopeBeforeBegin = null;
+            string childScopeInside = null;
+            Exception threadException = null;
+            var childEnteredScope = new ManualResetEventSlim(false);
+            var allowChildToExitScope = new ManualResetEventSlim(false);
+
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    childScopeBeforeBegin = LogScopeRecord.Current.Name;
+
+                    using (Log.BeginScope("childThread"))
+                    {
+                        childScopeInside = LogScopeRecord.Current.Name;
+
+                        // 子スレッドが childThread スコープ内にいることを親へ通知し、
+                        // 親が確認し終わるまで scope を抜けないように待機する。
+                        childEnteredScope.Set();
+                        if (!allowChildToExitScope.Wait(TimeSpan.FromSeconds(5)))
+                        {
+                            throw new TimeoutException("Timed out while waiting for parent thread verification.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    threadException = ex;
+                }
+            })
+            {
+                IsBackground = true
+            };
+
+            thread.Start();
+
+            Assert.That(
+                childEnteredScope.Wait(TimeSpan.FromSeconds(5)),
+                Is.True,
+                "Child thread did not enter child scope in time.");
+
+            // 子スレッドが childThread scope 内にいる最中でも、親スレッドの Current は変わらない。
+            Assert.That(LogScopeRecord.Current.Name, Is.EqualTo("parentThread"));
+
+            allowChildToExitScope.Set();
+
+            Assert.That(thread.Join(TimeSpan.FromSeconds(5)), Is.True, "Worker thread join timed out.");
+
+            if (threadException != null)
+            {
+                Assert.Fail($"Worker thread raised exception: {threadException}");
+            }
+
+            Assert.That(childScopeBeforeBegin, Is.EqualTo("parentThread"));
+            Assert.That(childScopeInside, Is.EqualTo("childThread"));
+            Assert.That(LogScopeRecord.Current.Name, Is.EqualTo("parentThread"));
+        }
+
+        // ─── LogEntry 経由での AsyncLocal 準拠スコープ伝播 ─────────────────────
+
+        [Test]
+        public async Task BeginScope_TaskRun_LogEntry_InheritsParent_AndChildDoesNotAffectParent()
+        {
+            using var parentScope = Log.BeginScope("parentTaskEntry");
+            string childBeforeScope = null;
+            string childInsideScope = null;
+            string parentDuringChildScope = null;
+            var childEnteredScope = new ManualResetEventSlim(false);
+            var allowChildToExitScope = new ManualResetEventSlim(false);
+
+            using (Log.Listen(LogLevel.Trace, e =>
+                   {
+                       switch (e.Message)
+                       {
+                           case "task-entry-child-before":
+                               childBeforeScope = e.Scope?.Name;
+                               break;
+                           case "task-entry-child-inside":
+                               childInsideScope = e.Scope?.Name;
+                               break;
+                           case "task-entry-parent-during":
+                               parentDuringChildScope = e.Scope?.Name;
+                               break;
+                       }
+                   }))
+            {
+                var childTask = Task.Run(() =>
+                {
+                    Log.Debug("task-entry-child-before");
+
+                    using (Log.BeginScope("childTaskEntry"))
+                    {
+                        childEnteredScope.Set();
+
+                        if (!allowChildToExitScope.Wait(TimeSpan.FromSeconds(5)))
+                        {
+                            throw new TimeoutException("Timed out while waiting for parent log emission.");
+                        }
+
+                        Log.Debug("task-entry-child-inside");
+                    }
+                });
+
+                Assert.That(
+                    childEnteredScope.Wait(TimeSpan.FromSeconds(5)),
+                    Is.True,
+                    "Task.Run child did not enter child scope in time.");
+
+                Log.Debug("task-entry-parent-during");
+
+                allowChildToExitScope.Set();
+                await childTask;
+            }
+
+            Assert.That(childBeforeScope, Is.EqualTo("parentTaskEntry"));
+            Assert.That(childInsideScope, Is.EqualTo("childTaskEntry"));
+            Assert.That(parentDuringChildScope, Is.EqualTo("parentTaskEntry"));
+        }
+
+        [Test]
+        public void BeginScope_NewThread_LogEntry_InheritsParent_AndChildDoesNotAffectParent()
+        {
+            using var parentScope = Log.BeginScope("parentThreadEntry");
+            string childBeforeScope = null;
+            string childInsideScope = null;
+            string parentDuringChildScope = null;
+            Exception threadException = null;
+            var childEnteredScope = new ManualResetEventSlim(false);
+            var allowChildToExitScope = new ManualResetEventSlim(false);
+
+            using (Log.Listen(LogLevel.Trace, e =>
+                   {
+                       switch (e.Message)
+                       {
+                           case "thread-entry-child-before":
+                               childBeforeScope = e.Scope?.Name;
+                               break;
+                           case "thread-entry-child-inside":
+                               childInsideScope = e.Scope?.Name;
+                               break;
+                           case "thread-entry-parent-during":
+                               parentDuringChildScope = e.Scope?.Name;
+                               break;
+                       }
+                   }))
+            {
+                var thread = new Thread(() =>
+                {
+                    try
+                    {
+                        Log.Debug("thread-entry-child-before");
+
+                        using (Log.BeginScope("childThreadEntry"))
+                        {
+                            childEnteredScope.Set();
+
+                            if (!allowChildToExitScope.Wait(TimeSpan.FromSeconds(5)))
+                            {
+                                throw new TimeoutException("Timed out while waiting for parent log emission.");
+                            }
+
+                            Log.Debug("thread-entry-child-inside");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        threadException = ex;
+                    }
+                })
+                {
+                    IsBackground = true
+                };
+
+                thread.Start();
+
+                Assert.That(
+                    childEnteredScope.Wait(TimeSpan.FromSeconds(5)),
+                    Is.True,
+                    "Thread child did not enter child scope in time.");
+
+                Log.Debug("thread-entry-parent-during");
+
+                allowChildToExitScope.Set();
+
+                Assert.That(thread.Join(TimeSpan.FromSeconds(5)), Is.True, "Worker thread join timed out.");
+            }
+
+            if (threadException != null)
+            {
+                Assert.Fail($"Worker thread raised exception: {threadException}");
+            }
+
+            Assert.That(childBeforeScope, Is.EqualTo("parentThreadEntry"));
+            Assert.That(childInsideScope, Is.EqualTo("childThreadEntry"));
+            Assert.That(parentDuringChildScope, Is.EqualTo("parentThreadEntry"));
+        }
+
         // ─── LogScopeRecord 直接テスト ─────────────────────────────────────────
 
         [Test]
@@ -387,7 +635,3 @@ namespace ScotchLog.Test.Editor
         }
     }
 }
-
-
-
-
