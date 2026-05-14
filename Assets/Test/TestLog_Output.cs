@@ -101,7 +101,7 @@ namespace ScotchLog.Test.Editor
         }
 
         [Test]
-        public void LogCritical_EmitsCorrectLevel()
+        public void LogFatal_EmitsCorrectLevel()
         {
             LogLevel capturedLevel = LogLevel.None;
             string capturedMessage = null;
@@ -112,11 +112,11 @@ namespace ScotchLog.Test.Editor
                 capturedMessage = e.Message;
             }))
             {
-                Log.Critical("critical message");
+                Log.Fatal("fatal message");
             }
 
-            Assert.AreEqual(LogLevel.Critical, capturedLevel);
-            Assert.AreEqual("critical message", capturedMessage);
+            Assert.AreEqual(LogLevel.Fatal, capturedLevel);
+            Assert.AreEqual("fatal message", capturedMessage);
         }
 
         [Test]

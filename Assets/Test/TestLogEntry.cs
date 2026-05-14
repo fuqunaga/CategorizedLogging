@@ -188,11 +188,11 @@ namespace ScotchLog.Test.Editor
         [Test]
         public void CopyFrom_CopiesLogLevel()
         {
-            var source = LogEntry.Rent(LogLevel.Critical, "src", MakeCaller());
+            var source = LogEntry.Rent(LogLevel.Fatal, "src", MakeCaller());
             var dest = new LogEntry();
             dest.CopyFrom(source);
 
-            Assert.That(dest.LogLevel, Is.EqualTo(LogLevel.Critical));
+            Assert.That(dest.LogLevel, Is.EqualTo(LogLevel.Fatal));
 
             source.Dispose();
         }

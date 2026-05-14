@@ -108,13 +108,13 @@ namespace ScotchLog
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void Critical(in StringWrapper message,
+        public static void Fatal(in StringWrapper message,
             [CallerFilePath] string callerFilePath = "",
             [CallerLineNumber] int callerLineNumber = 0,
             [CallerMemberName] string callerMemberName = ""
         )
         {
-            EmitLog(LogEntry.Rent(LogLevel.Critical, message,
+            EmitLog(LogEntry.Rent(LogLevel.Fatal, message,
                 new CallerInformation(callerFilePath, callerLineNumber, callerMemberName)));
         }
     }
