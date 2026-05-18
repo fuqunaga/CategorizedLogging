@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/fuqunaga/ScotchLog/compare/ga.fuquna.scotch-log-v0.4.0...ga.fuquna.scotch-log-v0.5.0) (2026-05-18)
+
+
+### Features
+
+* rename LogEntryPersistant to LogRecord for clarity ([35e4863](https://github.com/fuqunaga/ScotchLog/commit/35e4863d0049319abcb3162ea9d6b5895189f542))
+
 ## [0.4.0](https://github.com/fuqunaga/ScotchLog/compare/ga.fuquna.scotch-log-v0.3.1...ga.fuquna.scotch-log-v0.4.0) (2026-05-07)
 
 
