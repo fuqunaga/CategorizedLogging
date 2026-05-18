@@ -199,14 +199,14 @@ namespace ScotchLog.Test.Editor
         [Test]
         public void BeginScope_ListenerCapturedLog_KeepsScopeAfterScopeDisposed()
         {
-            LogEntryPersistant captured = default;
+            LogRecord captured = default;
             var hasCaptured = false;
 
             try
             {
                 using (Log.Listen(LogLevel.Trace, e =>
                        {
-                           captured = new LogEntryPersistant(e);
+                           captured = new LogRecord(e);
                            hasCaptured = true;
                        }))
                 {

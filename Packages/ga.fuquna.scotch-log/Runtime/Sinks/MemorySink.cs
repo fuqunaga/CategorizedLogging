@@ -10,33 +10,33 @@ namespace ScotchLog
     [Serializable]
     public class MemorySink : ISink
     {
-        private static readonly Action<LogEntryPersistant> DisposeLogEntry = entry => entry.Dispose();
+        private static readonly Action<LogRecord> DisposeLogEntry = entry => entry.Dispose();
 
-        private ConcurrentRingBuffer<LogEntryPersistant> _logEntries = new(1000, DisposeLogEntry);
+        private ConcurrentRingBuffer<LogRecord> _logRecords = new(1000, DisposeLogEntry);
 
         // 別スレッドから呼ばれるので注意
         public event Action onLogEntryAddedMultiThreaded;
 
         public int Capacity
         {
-            get => _logEntries.Capacity;
-            set => _logEntries.Capacity = value;
+            get => _logRecords.Capacity;
+            set => _logRecords.Capacity = value;
         }
 
-        public IEnumerable<LogEntryPersistant> LogEntries => _logEntries;
+        public IEnumerable<LogRecord> LogRecords => _logRecords;
 
         public void Log(LogEntry logEntry)
         {
             // StringWrapperをPersistantにしてコピー
-            var copiedEntry = new LogEntryPersistant(logEntry);
-            _logEntries.Add(copiedEntry);
+            var copiedEntry = new LogRecord(logEntry);
+            _logRecords.Add(copiedEntry);
 
             onLogEntryAddedMultiThreaded?.Invoke();
         }
 
         public void Clear()
         {
-            _logEntries.Clear();
+            _logRecords.Clear();
         }
     }
 }

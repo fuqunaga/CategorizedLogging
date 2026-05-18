@@ -5,7 +5,7 @@ using Unity.Collections;
 
 namespace ScotchLog.Test.Editor
 {
-    public class TestLogEntryPersistant
+    public class TestLogRecord
     {
         private static CallerInformation MakeCaller()
             => new CallerInformation("TestFile.cs", 1, "TestMethod");
@@ -28,7 +28,7 @@ namespace ScotchLog.Test.Editor
         public void Constructor_CopiesLogLevel()
         {
             var (entry, scope) = MakeEntryWithScope(LogLevel.Error, "msg");
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 
@@ -43,7 +43,7 @@ namespace ScotchLog.Test.Editor
             var before = DateTime.Now;
             var (entry, scope) = MakeEntryWithScope(LogLevel.Debug, "msg");
             var after = DateTime.Now;
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 
@@ -57,7 +57,7 @@ namespace ScotchLog.Test.Editor
         public void Constructor_ClonesMessage_MessageReadable()
         {
             var (entry, scope) = MakeEntryWithScope(LogLevel.Information, "persisted message");
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 
@@ -72,7 +72,7 @@ namespace ScotchLog.Test.Editor
             var scope = Log.BeginScope("callerScope");
             var caller = new CallerInformation("MySource.cs", 77, "MyMethod");
             var entry = LogEntry.Rent(LogLevel.Debug, "msg", caller);
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 
@@ -86,7 +86,7 @@ namespace ScotchLog.Test.Editor
         public void Constructor_ScopeHolder_IsNotNull()
         {
             var (entry, scope) = MakeEntryWithScope(LogLevel.Debug, "msg");
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 
@@ -100,7 +100,7 @@ namespace ScotchLog.Test.Editor
         {
             var scope = Log.BeginScope("namedScope");
             var entry = LogEntry.Rent(LogLevel.Debug, "msg", MakeCaller());
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();  // スコープを先に Dispose してもホルダーが保持
 
@@ -124,7 +124,7 @@ namespace ScotchLog.Test.Editor
             StringWrapper tempJobBacked = new FixedString64Bytes("native text message");
             var entry = LogEntry.Rent(LogLevel.Debug, tempJobBacked, MakeCaller());
 
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             // エントリを返却（内部 StringWrapper は dispose される）
             entry.Dispose();
 
@@ -142,7 +142,7 @@ namespace ScotchLog.Test.Editor
         public void Dispose_DoesNotThrow()
         {
             var (entry, scope) = MakeEntryWithScope(LogLevel.Debug, "msg");
-            var persistant = new LogEntryPersistant(entry);
+            var persistant = new LogRecord(entry);
             entry.Dispose();
             scope.Dispose();
 

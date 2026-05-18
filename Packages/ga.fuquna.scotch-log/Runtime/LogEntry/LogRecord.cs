@@ -8,7 +8,7 @@ namespace ScotchLog;
 /// <summary>
 /// LogEntryの内容を長期保存するための構造体
 /// </summary>
-public readonly struct LogEntryPersistant : IDisposable
+public readonly struct LogRecord : IDisposable
 {
     public DateTime Timestamp { get; }
     public LogLevel LogLevel { get; }
@@ -19,7 +19,7 @@ public readonly struct LogEntryPersistant : IDisposable
     public string Message => StringWrapper.ToString();
     public LogScopeRecord Scope => ScopeHolder.Record;
     
-    public LogEntryPersistant(LogEntry logEntry)
+    public LogRecord(LogEntry logEntry)
     {
         Timestamp = logEntry.Timestamp;
         LogLevel = logEntry.LogLevel;

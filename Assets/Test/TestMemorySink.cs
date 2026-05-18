@@ -19,12 +19,12 @@ namespace ScotchLog.Test.Editor
         // ─── Log() ───────────────────────────────────────────────────────────
 
         [Test]
-        public void Log_AddsEntryToLogEntries()
+        public void Log_AddsEntryToLogRecords()
         {
             var sink = new MemorySink();
             sink.Log(MakeEntry(LogLevel.Debug, "hello"));
 
-            Assert.That(sink.LogEntries.Count(), Is.EqualTo(1));
+            Assert.That(sink.LogRecords.Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -33,7 +33,7 @@ namespace ScotchLog.Test.Editor
             var sink = new MemorySink();
             sink.Log(MakeEntry(LogLevel.Warning, "warn"));
 
-            Assert.That(sink.LogEntries.First().LogLevel, Is.EqualTo(LogLevel.Warning));
+            Assert.That(sink.LogRecords.First().LogLevel, Is.EqualTo(LogLevel.Warning));
         }
 
         [Test]
@@ -42,7 +42,7 @@ namespace ScotchLog.Test.Editor
             var sink = new MemorySink();
             sink.Log(MakeEntry(LogLevel.Information, "test message"));
 
-            Assert.That(sink.LogEntries.First().Message, Is.EqualTo("test message"));
+            Assert.That(sink.LogRecords.First().Message, Is.EqualTo("test message"));
         }
 
         [Test]
@@ -79,7 +79,7 @@ namespace ScotchLog.Test.Editor
             sink.Log(MakeEntry(LogLevel.Information, "second"));
             sink.Log(MakeEntry(LogLevel.Warning, "third"));
 
-            var entries = sink.LogEntries.ToList();
+            var entries = sink.LogRecords.ToList();
             Assert.That(entries.Count, Is.EqualTo(3));
             Assert.That(entries[0].Message, Is.EqualTo("first"));
             Assert.That(entries[1].Message, Is.EqualTo("second"));
@@ -97,7 +97,7 @@ namespace ScotchLog.Test.Editor
 
             sink.Clear();
 
-            Assert.That(sink.LogEntries.Count(), Is.EqualTo(0));
+            Assert.That(sink.LogRecords.Count(), Is.EqualTo(0));
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace ScotchLog.Test.Editor
             sink.Log(MakeEntry(LogLevel.Debug, "newest"));
             sink.Log(MakeEntry(LogLevel.Debug, "extra")); // "oldest" が溢れる
 
-            var entries = sink.LogEntries.ToList();
+            var entries = sink.LogRecords.ToList();
             Assert.That(entries.Count, Is.EqualTo(3));
             Assert.That(entries[0].Message, Is.EqualTo("middle"));
             Assert.That(entries[1].Message, Is.EqualTo("newest"));
@@ -153,7 +153,7 @@ namespace ScotchLog.Test.Editor
 
             sink.Capacity = 2; // 古い2件が破棄される
 
-            var entries = sink.LogEntries.ToList();
+            var entries = sink.LogRecords.ToList();
             Assert.That(entries.Count, Is.EqualTo(2));
             Assert.That(entries[0].Message, Is.EqualTo("new1"));
             Assert.That(entries[1].Message, Is.EqualTo("new2"));
@@ -169,7 +169,7 @@ namespace ScotchLog.Test.Editor
                 sink.Log(MakeEntry(LogLevel.Debug, "scope test"));
             }
 
-            var stored = sink.LogEntries.First();
+            var stored = sink.LogRecords.First();
             Assert.That(stored.Scope, Is.Not.Null);
             Assert.That(stored.Scope.Name, Is.EqualTo("request"));
             Assert.That(stored.Scope.Properties["requestId"], Is.EqualTo("req-001"));
@@ -194,7 +194,7 @@ namespace ScotchLog.Test.Editor
             sink.Log(entry);
 
             // NativeText が生存中はメッセージを読める
-            Assert.That(sink.LogEntries.First().Message, Is.EqualTo("tempjob message"));
+            Assert.That(sink.LogRecords.First().Message, Is.EqualTo("tempjob message"));
 
             nativeTextBacked.Dispose();
         }
@@ -215,7 +215,7 @@ namespace ScotchLog.Test.Editor
             entry.Set(LogLevel.Debug, nativeTextBacked, default);
             sink.Log(entry);
 
-            var stored = sink.LogEntries.First();
+            var stored = sink.LogRecords.First();
 
             // オリジナルの NativeText を破棄（TempJob の寿命切れをシミュレート）
             nativeTextBacked.Dispose();
@@ -267,7 +267,7 @@ namespace ScotchLog.Test.Editor
                 Assert.Fail($"マルチスレッドで例外が発生しました: {exceptions[0]}");
 
             // 容量以下のエントリ数が保持されていること
-            Assert.That(sink.LogEntries.Count(), Is.LessThanOrEqualTo(sink.Capacity));
+            Assert.That(sink.LogRecords.Count(), Is.LessThanOrEqualTo(sink.Capacity));
         }
     }
 }

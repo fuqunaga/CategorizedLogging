@@ -138,7 +138,7 @@ namespace ScotchLog.Samples
  
             void UpdateLogField()
             {
-                logText = string.Join(Environment.NewLine, memorySink.LogEntries.Select(logEntry => logEntry.ToString()));
+                logText = string.Join(Environment.NewLine, memorySink.LogRecords.Select(logEntry => logEntry.ToString()));
             }
         }
     }
